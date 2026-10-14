@@ -60,10 +60,11 @@ function App(){
     loadProfile(profile.sub).then(saved=>{
       if(cancelled)return;
       const fresh=profile.demo?makeDemoState():initialState();fresh.preferences.locale=welcomeLocale;
+      if(!profile.demo&&!saved)fresh.updatedAt='1970-01-01T00:00:00.000Z';
       setAudit(saved??fresh);
       setLoaded(true);
       setSyncStatus(profile.demo?'notConnected':'pending');
-    }).catch(()=>{if(!cancelled){const fresh=profile.demo?makeDemoState():initialState();fresh.preferences.locale=welcomeLocale;setAudit(fresh);setLoaded(true);}});
+    }).catch(()=>{if(!cancelled){const fresh=profile.demo?makeDemoState():initialState();fresh.preferences.locale=welcomeLocale;if(!profile.demo)fresh.updatedAt='1970-01-01T00:00:00.000Z';setAudit(fresh);setLoaded(true);}});
     return()=>{cancelled=true;};
   },[profile?.sub]);
   useEffect(()=>{if(profile&&loaded)saveProfile(profile.sub,audit).catch(()=>setToast('Unable to save on this device'));},[profile?.sub,loaded,audit]);

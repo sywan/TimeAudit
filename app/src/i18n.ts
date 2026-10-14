@@ -1,0 +1,106 @@
+export type Locale = 'zh-TW' | 'en';
+
+const zh = {
+  appName:'Time Audit', tagline:'讓時間，看得見方向。', preview:'預覽模式', previewNote:'此模式僅保存在這台裝置，尚未連結 Google Drive。',
+  signIn:'使用 Google 繼續', startPreview:'先預覽介面', googleNotReady:'Google 登入尚待應用擁有者完成一次性設定。',
+  welcome:'看見時間的真實樣貌', welcomeText:'記錄日常、回看選擇，讓時間靠近你在乎的事。',
+  today:'今天', calendar:'日曆', insights:'分析', reflection:'反思', settings:'設定',
+  record:'新增紀錄', save:'儲存紀錄', update:'更新紀錄', cancel:'取消', delete:'刪除', edit:'編輯',
+  start:'開始', end:'結束', duration:'時長', minutes:'分鐘', hours:'小時', now:'現在', previousEnd:'接上一筆',
+  whatDoing:'這段時間在做什麼？', common:'常用', recent:'最近', allActivities:'所有活動', custom:'自訂描述', customPlaceholder:'也可以自己寫，例如：和同事討論提案',
+  importance:'重要性', urgency:'急迫性', alignment:'價值一致感', optional:'不適用／暫不評估',
+  low:'非常低', middle:'中等', high:'非常高', none:'未評',
+  selectRatings:'請為三個量尺選擇 1–7 或「暫不評估」', invalidTime:'結束時間必須晚於開始時間', futureTime:'不能記錄尚未發生的時間', overlap:'這段時間與另一筆主要活動重疊，請調整起訖。',
+  todayOverview:'今天的時間', recorded:'已記錄', unknown:'尚未記錄', liveDay:'未來時段', coverage:'覆蓋率',
+  todayPrompt:'從剛才的一段時間開始', quickRecord:'快速記錄', viewCalendar:'查看日曆',
+  monthOverview:'月曆總覽', dayTimeline:'當日時間軸', emptySlot:'點選空白時段補登', backfill:'補登', recallConfidence:'回憶信心', highConfidence:'高', mediumConfidence:'中', lowConfidence:'低',
+  totalByCategory:'時間流向', valueChart:'三個量尺的時間分布', reportedMinutes:'有評分鐘', unratedMinutes:'未評分鐘',
+  dateRange:'期間', sevenDays:'7 天', thirtyDays:'30 天', todayOnly:'今天', noData:'這段期間還沒有足夠紀錄。',
+  reflectTitle:'從資料開始提問', reflectLead:'以下是可檢查的線索，不是人格或心理診斷。',
+  highUrgency:'急迫、但較不重要的活動', lowAlignment:'價值一致感較低的活動',
+  highUrgencyQuestion:'這些急事是誰的優先順序？下次可以先確認期限與責任人嗎？',
+  lowAlignmentQuestion:'這些活動的好處與代價是什麼？是否有外部限制？',
+  experiment:'我的下一個小實驗', experimentPlaceholder:'如果……，我就先……', saveExperiment:'儲存想法',
+  valuesGoals:'價值與目標', values:'我的價值', goals:'目前目標', addValue:'新增價值', addGoal:'新增目標',
+  reminders:'記錄提醒', reminderInterval:'提醒間隔', quietHours:'安靜時段', notifyPermission:'開啟瀏覽器通知', notificationHint:'瀏覽器開啟時可提醒；背景推播需要後續服務設定。',
+  sync:'Google Drive 同步', connectDrive:'授權使用我的 Drive', syncNow:'立即同步', synced:'已同步', pending:'待同步', notConnected:'尚未連接', syncing:'同步中', syncFailed:'同步失敗',
+  exportJson:'匯出 JSON', exportCsv:'匯出 CSV', importJson:'匯入 JSON', sheet:'Google Sheet 鏡像', openSheet:'開啟試算表',
+  questionnaire:'可選量表', questionnaireInfo:'量表可以略過；未填就不計算相應分數。', ipip:'五因素人格量表（IPIP-50）', later:'即將加入正式題目與計分',
+  language:'介面語言', account:'帳號', signOut:'登出', privacy:'資料放在你的 Google Drive；本機保留離線快取。',
+  category_work:'工作', category_learning:'學習', category_home:'家務', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_travel:'交通', category_life:'生活', category_other:'其他',
+  activity_deep:'深度工作', activity_writing:'寫作／報告', activity_meeting:'會議', activity_messages:'回訊／郵件', activity_admin:'行政', activity_planning:'規劃',
+  activity_reading:'閱讀', activity_course:'上課', activity_practice:'練習', activity_research:'研究',
+  activity_cleaning:'清潔', activity_cooking:'煮飯', activity_shopping:'採買', activity_chores:'家務雜事',
+  activity_child:'照顧孩子', activity_elder:'照顧長者', activity_pet:'照顧寵物',
+  activity_family:'家庭相處', activity_friends:'朋友', activity_volunteer:'志工',
+  activity_exercise:'運動', activity_walk:'散步', activity_medical:'就醫', activity_meditation:'冥想',
+  activity_break:'短暫休息', activity_nap:'小憩', activity_idle:'放空',
+  activity_game:'遊戲', activity_video:'追劇／影片', activity_music:'音樂', activity_socialmedia:'社群媒體',
+  activity_night:'夜間睡眠', activity_commute:'通勤', activity_transit:'大眾運輸', activity_driving:'駕車',
+  activity_meal:'用餐', activity_hygiene:'盥洗', activity_other:'自訂活動',
+};
+
+const en: Record<keyof typeof zh,string> = {
+  appName:'Time Audit', tagline:'See where your time is going.', preview:'Preview mode', previewNote:'Saved only on this device. Google Drive is not connected yet.',
+  signIn:'Continue with Google', startPreview:'Preview the app', googleNotReady:'Google sign-in awaits one-time setup by the app owner.',
+  welcome:'See your time clearly', welcomeText:'Record your day, review your choices, and bring time closer to what matters.',
+  today:'Today', calendar:'Calendar', insights:'Insights', reflection:'Reflection', settings:'Settings',
+  record:'New entry', save:'Save entry', update:'Update entry', cancel:'Cancel', delete:'Delete', edit:'Edit',
+  start:'Start', end:'End', duration:'Duration', minutes:'minutes', hours:'hours', now:'Now', previousEnd:'After previous',
+  whatDoing:'What were you doing?', common:'Frequent', recent:'Recent', allActivities:'All activities', custom:'Custom description', customPlaceholder:'You can describe it, e.g. discussing a proposal',
+  importance:'Importance', urgency:'Urgency', alignment:'Value alignment', optional:'N/A or defer',
+  low:'Very low', middle:'Moderate', high:'Very high', none:'Unrated',
+  selectRatings:'Choose 1–7 or N/A for each rating', invalidTime:'End must be later than start', futureTime:'You cannot log future time', overlap:'This overlaps another primary activity. Please adjust the time.',
+  todayOverview:'Today at a glance', recorded:'Recorded', unknown:'Unrecorded', liveDay:'Future', coverage:'Coverage',
+  todayPrompt:'Start with the last stretch of time', quickRecord:'Quick entry', viewCalendar:'Open calendar',
+  monthOverview:'Month overview', dayTimeline:'Daily timeline', emptySlot:'Select a blank period to backfill', backfill:'Backfilled', recallConfidence:'Recall confidence', highConfidence:'High', mediumConfidence:'Medium', lowConfidence:'Low',
+  totalByCategory:'Where time went', valueChart:'Time by rating', reportedMinutes:'Rated minutes', unratedMinutes:'Unrated minutes',
+  dateRange:'Period', sevenDays:'7 days', thirtyDays:'30 days', todayOnly:'Today', noData:'Not enough entries for this period yet.',
+  reflectTitle:'Start with the evidence', reflectLead:'These are prompts to check, not personality or clinical diagnoses.',
+  highUrgency:'Urgent, lower-importance work', lowAlignment:'Lower value-alignment time',
+  highUrgencyQuestion:'Whose priority was this? Could you check the deadline and owner next time?',
+  lowAlignmentQuestion:'What were its benefits and costs? Were there outside constraints?',
+  experiment:'My next small experiment', experimentPlaceholder:'If …, I will first …', saveExperiment:'Save idea',
+  valuesGoals:'Values and goals', values:'My values', goals:'Current goals', addValue:'Add value', addGoal:'Add goal',
+  reminders:'Reminders', reminderInterval:'Reminder interval', quietHours:'Quiet hours', notifyPermission:'Enable browser notifications', notificationHint:'Reminders work while the browser is open; background push needs later service setup.',
+  sync:'Google Drive sync', connectDrive:'Allow access to my Drive', syncNow:'Sync now', synced:'Synced', pending:'Pending', notConnected:'Not connected', syncing:'Syncing', syncFailed:'Sync failed',
+  exportJson:'Export JSON', exportCsv:'Export CSV', importJson:'Import JSON', sheet:'Google Sheet mirror', openSheet:'Open spreadsheet',
+  questionnaire:'Optional questionnaires', questionnaireInfo:'You may skip questionnaires; missing answers do not receive scores.', ipip:'Five-factor inventory (IPIP-50)', later:'Official items and scoring coming next',
+  language:'Language', account:'Account', signOut:'Sign out', privacy:'Data lives in your Google Drive; this device keeps an offline cache.',
+  category_work:'Work', category_learning:'Learning', category_home:'Household', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_travel:'Travel', category_life:'Daily living', category_other:'Other',
+  activity_deep:'Deep work', activity_writing:'Writing / report', activity_meeting:'Meeting', activity_messages:'Messages / email', activity_admin:'Administration', activity_planning:'Planning',
+  activity_reading:'Reading', activity_course:'Class', activity_practice:'Practice', activity_research:'Research',
+  activity_cleaning:'Cleaning', activity_cooking:'Cooking', activity_shopping:'Shopping', activity_chores:'Chores',
+  activity_child:'Childcare', activity_elder:'Eldercare', activity_pet:'Pet care',
+  activity_family:'Family time', activity_friends:'Friends', activity_volunteer:'Volunteering',
+  activity_exercise:'Exercise', activity_walk:'Walk', activity_medical:'Medical visit', activity_meditation:'Meditation',
+  activity_break:'Short break', activity_nap:'Nap', activity_idle:'Doing nothing',
+  activity_game:'Gaming', activity_video:'Shows / video', activity_music:'Music', activity_socialmedia:'Social media',
+  activity_night:'Night sleep', activity_commute:'Commute', activity_transit:'Transit', activity_driving:'Driving',
+  activity_meal:'Meal', activity_hygiene:'Hygiene', activity_other:'Custom activity',
+};
+
+export type TranslationKey = keyof typeof zh;
+export const translate = (locale: Locale, key: TranslationKey) => (locale === 'en' ? en[key] : zh[key]);
+
+export const categories: Array<{id:string; key: TranslationKey; color:string; activities: Array<{id:string;key:TranslationKey}>}> = [
+  {id:'work',key:'category_work',color:'#517b9b',activities:[{id:'work.deep',key:'activity_deep'},{id:'work.writing',key:'activity_writing'},{id:'work.meeting',key:'activity_meeting'},{id:'work.messages',key:'activity_messages'},{id:'work.admin',key:'activity_admin'},{id:'work.planning',key:'activity_planning'}]},
+  {id:'learning',key:'category_learning',color:'#7180a3',activities:[{id:'learning.reading',key:'activity_reading'},{id:'learning.course',key:'activity_course'},{id:'learning.practice',key:'activity_practice'},{id:'learning.research',key:'activity_research'}]},
+  {id:'home',key:'category_home',color:'#a0878a',activities:[{id:'home.cleaning',key:'activity_cleaning'},{id:'home.cooking',key:'activity_cooking'},{id:'home.shopping',key:'activity_shopping'},{id:'home.chores',key:'activity_chores'}]},
+  {id:'care',key:'category_care',color:'#b28a7b',activities:[{id:'care.child',key:'activity_child'},{id:'care.elder',key:'activity_elder'},{id:'care.pet',key:'activity_pet'}]},
+  {id:'social',key:'category_social',color:'#9e88ac',activities:[{id:'social.family',key:'activity_family'},{id:'social.friends',key:'activity_friends'},{id:'social.volunteer',key:'activity_volunteer'}]},
+  {id:'health',key:'category_health',color:'#719a90',activities:[{id:'health.exercise',key:'activity_exercise'},{id:'health.walk',key:'activity_walk'},{id:'health.medical',key:'activity_medical'},{id:'health.meditation',key:'activity_meditation'}]},
+  {id:'rest',key:'category_rest',color:'#a8a28e',activities:[{id:'rest.break',key:'activity_break'},{id:'rest.nap',key:'activity_nap'},{id:'rest.idle',key:'activity_idle'}]},
+  {id:'entertainment',key:'category_entertainment',color:'#9b90ae',activities:[{id:'entertainment.game',key:'activity_game'},{id:'entertainment.video',key:'activity_video'},{id:'entertainment.music',key:'activity_music'},{id:'entertainment.socialmedia',key:'activity_socialmedia'}]},
+  {id:'sleep',key:'category_sleep',color:'#7c90b2',activities:[{id:'sleep.night',key:'activity_night'}]},
+  {id:'travel',key:'category_travel',color:'#91a6ab',activities:[{id:'travel.commute',key:'activity_commute'},{id:'travel.transit',key:'activity_transit'},{id:'travel.driving',key:'activity_driving'}]},
+  {id:'life',key:'category_life',color:'#b8a38d',activities:[{id:'life.meal',key:'activity_meal'},{id:'life.hygiene',key:'activity_hygiene'}]},
+  {id:'other',key:'category_other',color:'#a3a9af',activities:[{id:'other.custom',key:'activity_other'}]},
+];
+
+export function activityLabel(locale: Locale, id: string) {
+  const activity = categories.flatMap(c=>c.activities).find(a=>a.id===id);
+  return activity ? translate(locale, activity.key) : translate(locale,'activity_other');
+}
+
+export function categoryMeta(id: string) { return categories.find(c=>c.id===id) ?? categories[categories.length-1]; }

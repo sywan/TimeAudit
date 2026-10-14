@@ -1,0 +1,11 @@
+{
+  "name": "Time Audit",
+  "short_name": "Time Audit",
+  "description": "A calm, private place to see where your time goes.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f5f8fb",
+  "theme_color": "#edf3f8",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

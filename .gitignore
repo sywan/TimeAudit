@@ -1,0 +1,7 @@
+app/node_modules/
+app/dist/
+app/.openai/
+app/.env
+app/.env.*
+!app/.env.example
+.DS_Store

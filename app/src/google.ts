@@ -9,7 +9,7 @@ interface GoogleAccounts {
     disableAutoSelect():void;
   };
   oauth2: {
-    initTokenClient(options:{client_id:string;scope:string;login_hint?:string;callback:(response:TokenResponse)=>void}):{requestAccessToken(options?:{prompt?:string}):void};
+    initTokenClient(options:{client_id:string;scope:string;login_hint?:string;callback:(response:TokenResponse)=>void;error_callback?:(error:{type:string})=>void}):{requestAccessToken(options?:{prompt?:string}):void};
     revoke(token:string,callback:()=>void):void;
   };
 }
@@ -37,7 +37,7 @@ function decodeJwtPayload(token:string):Record<string,unknown> {
 }
 
 export async function mountGoogleButton(element:HTMLElement,onProfile:(profile:Profile)=>void):Promise<void> {
-  const accounts=await waitForGoogle();
+  const accounts=window.google?.accounts ?? await waitForGoogle();
   accounts.id.initialize({client_id:googleClientId,callback:response=>{
     if(!response.credential)return;
     const claims=decodeJwtPayload(response.credential);
@@ -49,9 +49,11 @@ export async function mountGoogleButton(element:HTMLElement,onProfile:(profile:P
 }
 
 export async function requestDriveToken(expectedSub:string):Promise<string> {
-  const accounts=await waitForGoogle();
+  const accounts=window.google?.accounts ?? await waitForGoogle();
   return new Promise((resolve,reject)=>{
-    const client=accounts.oauth2.initTokenClient({client_id:googleClientId,scope:'openid profile email https://www.googleapis.com/auth/drive.file',login_hint:expectedSub,callback:async r=>{
+    const client=accounts.oauth2.initTokenClient({client_id:googleClientId,scope:'openid profile email https://www.googleapis.com/auth/drive.file',login_hint:expectedSub,error_callback:error=>{
+      reject(new Error(error.type==='popup_closed'?'Google Drive authorization was closed.':error.type==='popup_failed_to_open'?'The browser blocked Google Drive authorization. Please allow pop-ups for this site.':`Google Drive authorization error: ${error.type}`));
+    },callback:async r=>{
       if(!r.access_token){reject(new Error(r.error??'Google Drive authorization failed'));return;}
       try{
         const response=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:`Bearer ${r.access_token}`}});

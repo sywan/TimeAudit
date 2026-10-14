@@ -84,12 +84,12 @@ function App(){
   const entries=useMemo(()=>activeEntries(audit.entries).sort((a,b)=>Date.parse(a.startAt)-Date.parse(b.startAt)),[audit.entries]);
 
   const doSync=useCallback(async(currentToken:string,source=audit)=>{
-    if(syncLock.current||profile?.demo)return;
+    if(syncLock.current||profile?.demo)return false;
     syncLock.current=true;setSyncStatus('syncing');
     try{
       const result=await syncWithDrive(source,currentToken);
       setConflicts(result.conflicts);
-      if(result.conflicts.length){setSyncStatus('syncFailed');setToast(say('有同步衝突，請在設定中選擇版本。','Sync conflict: resolve it in Settings.'));return;}
+      if(result.conflicts.length){setSyncStatus('syncFailed');setToast(say('有同步衝突，請在設定中選擇版本。','Sync conflict: resolve it in Settings.'));return false;}
       let next=result.state;
       try{
         const sheetId=await updateSheetMirror(next,currentToken,result.folderId);
@@ -102,7 +102,16 @@ function App(){
         return {...current,entries:merged.entries};
       });
       setSyncStatus('synced');
-    }catch(error){setSyncStatus('syncFailed');setToast(error instanceof Error?error.message:String(error));}
+      return true;
+    }catch(error){
+      setSyncStatus('syncFailed');
+      const message=error instanceof Error?error.message:String(error);
+      if(/\b401\b/.test(message)){
+        setToken(null);
+        setToast(say('Google Drive 授權已到期，請點上方「連結 Drive」重新授權。','Google Drive access expired. Use “Connect Drive” above to authorize again.'));
+      }else setToast(message);
+      return false;
+    }
     finally{syncLock.current=false;}
   },[audit,profile?.demo,locale]);
 
@@ -114,7 +123,13 @@ function App(){
   },[audit,token,loaded,profile?.demo,conflicts.length,doSync]);
 
   const connectDrive=async()=>{
-    try{if(!profile||profile.demo)return;const accessToken=await requestDriveToken(profile.sub);setToken(accessToken);await doSync(accessToken,audit);}catch(error){setToast(error instanceof Error?error.message:String(error));}
+    try{
+      if(!profile||profile.demo)return;
+      setSyncStatus('syncing');
+      const accessToken=await requestDriveToken(profile.sub);
+      setToken(accessToken);
+      if(await doSync(accessToken,audit))setToast(say('Drive 授權與同步已完成。','Drive authorization and sync are complete.'));
+    }catch(error){setSyncStatus('syncFailed');setToast(error instanceof Error?error.message:String(error));}
   };
 
   useEffect(()=>{
@@ -166,7 +181,7 @@ function App(){
       <div className="sidebar-bottom"><div className="sidebar-quote"><Sparkles size={18}/><p>{say('時間不是要被填滿，而是用來承載你重視的事。','Time is there to hold what matters, not merely to be filled.')}</p></div><div className="sidebar-profile"><div className="avatar">{profile.picture?<img src={profile.picture} alt=""/>:profile.name.charAt(0)}</div><div><b>{profile.name||'Time Audit'}</b><small>{profile.demo?t('preview'):profile.email}</small></div></div></div>
       <div className="sidebar-resizer" role="separator" tabIndex={0} aria-orientation="vertical" aria-label={say('調整側欄寬度','Resize sidebar')} aria-valuenow={sidebarWidth} aria-valuemin={220} aria-valuemax={380} onPointerDown={startSidebarResize} onKeyDown={event=>{if(event.key==='ArrowRight')setSidebarWidth(v=>Math.min(380,v+12));if(event.key==='ArrowLeft')setSidebarWidth(v=>Math.max(220,v-12));}}/>
     </aside>
-    <div className="main-wrap"><header className="topbar"><button className="mobile-menu icon-button" onClick={()=>setMobileNav(v=>!v)} aria-label="Menu"><Menu size={22}/></button><div className="breadcrumb">{t(navItems.find(n=>n.id===page)?.key??'today')}</div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('language')}><button className={locale==='zh-TW'?'active':''} aria-pressed={locale==='zh-TW'} onClick={()=>changeLocale('zh-TW')}>繁中</button><button className={locale==='en'?'active':''} aria-pressed={locale==='en'} onClick={()=>changeLocale('en')}>EN</button></div><span className={`sync-pill ${syncStatus}`}>{profile.demo?<CloudOff size={14}/>:syncStatus==='synced'?<Cloud size={14}/>:<CloudOff size={14}/>} {profile.demo?t('preview'):t(syncStatus)}</span><button className="icon-button" title={t('reminders')} onClick={()=>setPage('settings')}><Bell size={19}/></button><div className="top-avatar">{profile.name.charAt(0)}</div></div></header>
+    <div className="main-wrap"><header className="topbar"><button className="mobile-menu icon-button" onClick={()=>setMobileNav(v=>!v)} aria-label="Menu"><Menu size={22}/></button><div className="breadcrumb">{t(navItems.find(n=>n.id===page)?.key??'today')}</div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('language')}><button className={locale==='zh-TW'?'active':''} aria-pressed={locale==='zh-TW'} onClick={()=>changeLocale('zh-TW')}>繁中</button><button className={locale==='en'?'active':''} aria-pressed={locale==='en'} onClick={()=>changeLocale('en')}>EN</button></div>{!profile.demo&&<button className={`top-drive-button ${syncStatus}`} disabled={syncStatus==='syncing'} onClick={()=>{if(token)void doSync(token,audit);else void connectDrive();}} title={token?t('syncNow'):t('connectDrive')} aria-label={token?t('syncNow'):t('connectDrive')}><Cloud size={16}/><span>{syncStatus==='syncing'?t('syncing'):token?t('syncNowShort'):t('connectDriveShort')}</span></button>}<span className={`sync-pill ${syncStatus}`}>{profile.demo?<CloudOff size={14}/>:syncStatus==='synced'?<Cloud size={14}/>:<CloudOff size={14}/>} {profile.demo?t('preview'):t(syncStatus)}</span><button className="icon-button" title={t('reminders')} onClick={()=>setPage('settings')}><Bell size={19}/></button><div className="top-avatar">{profile.name.charAt(0)}</div></div></header>
       <main className="content">
         {profile.demo&&<div className="preview-banner"><ShieldCheck size={17}/><span>{t('previewNote')}</span></div>}
         {!profile.demo&&!token&&<div className="preview-banner drive-banner"><CloudOff size={17}/><span>{say('Google Drive 尚未授權。此時新增的紀錄只會暫存在這台裝置；請授權後同步到你的 Drive。','Google Drive is not connected. New entries stay on this device until you authorize and sync.')}</span><button className="secondary-button compact" onClick={connectDrive}>{t('connectDrive')}</button></div>}

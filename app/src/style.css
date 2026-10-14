@@ -23,3 +23,10 @@
 .language-switch button{border:0;background:transparent;color:#6d8a9d;border-radius:6px;padding:6px 9px;font-size:.75rem;font-weight:700;white-space:nowrap}
 .language-switch button.active{background:white;color:#3f779a;box-shadow:0 1px 5px #315e7b1c}
 @media(max-width:760px){.top-actions{gap:6px}.language-switch button{padding:5px 7px}}
+.top-drive-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 11px;border:1px solid #bdd3e0;border-radius:9px;background:#eaf4f9;color:#3f7392;font-size:.7rem;font-weight:700;white-space:nowrap}
+.top-drive-button:hover{background:#dceef7;border-color:#95b9ce}
+.top-drive-button.synced{border-color:#bfdacb;background:#eef8f2;color:#4d8967}
+.top-drive-button.syncFailed{border-color:#e3c8c2;background:#fff4f1;color:#a56d63}
+.top-drive-button:disabled{cursor:progress}
+@media(max-width:760px){.top-actions .sync-pill{display:none}.top-drive-button{min-height:38px;padding:0 8px}.topbar{gap:4px}}
+@media(max-width:390px){.topbar .breadcrumb{display:none}.top-actions{margin-left:auto}}

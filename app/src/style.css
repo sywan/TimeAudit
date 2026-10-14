@@ -30,3 +30,17 @@
 .top-drive-button:disabled{cursor:progress}
 @media(max-width:760px){.top-actions .sync-pill{display:none}.top-drive-button{min-height:38px;padding:0 8px}.topbar{gap:4px}}
 @media(max-width:390px){.topbar .breadcrumb{display:none}.top-actions{margin-left:auto}}
+
+/* Keep the current page controls reachable while the document scrolls. */
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.mobile-nav{display:none}
+.modal-backdrop{z-index:100}
+.toast{z-index:110}
+@media(max-width:760px){
+  .sidebar{z-index:40}
+  .mobile-nav{position:sticky;top:62px;z-index:25;display:flex;align-items:center;gap:4px;min-height:52px;padding:5px 10px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:#f9fcfe;border-bottom:1px solid #dce8ef;box-shadow:0 5px 12px #24445b0d}
+  .mobile-nav::-webkit-scrollbar{display:none}
+  .mobile-nav button{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-height:42px;padding:0 11px;border:0;border-radius:9px;background:transparent;color:#6d899b;font-size:.75rem;font-weight:700;white-space:nowrap}
+  .mobile-nav button:hover,.mobile-nav button.active{background:#e3eff7;color:#3f789b}
+  .mobile-nav button:focus-visible{outline:2px solid #4d85ab;outline-offset:2px}
+}

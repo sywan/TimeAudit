@@ -1,4 +1,4 @@
-const CACHE = 'time-audit-shell-v5';
+const CACHE = 'time-audit-shell-v6';
 const root = self.registration.scope;
 const shell = [root, new URL('manifest.webmanifest', root).href, new URL('icon.svg', root).href, new URL('copyright.html', root).href];
 self.addEventListener('install', event => {

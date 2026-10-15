@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { categoryOf, durationMinutes, getGaps, initialState, overlapMinutes, withV09CategoryDefaults } from '../src/types.ts';
 import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
 import { activityLabel, categories } from '../src/i18n.ts';
-import { publishedBundlePath } from '../src/update.ts';
+import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../src/update.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 
@@ -81,4 +81,14 @@ test('deep relaxation is a health activity and an existing personal ID moves the
 test('update check reads the published content-hashed bundle, not the product version', () => {
   assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/index-Ab12cd.js"></script>'),'/TimeAudit/assets/index-Ab12cd.js');
   assert.equal(publishedBundlePath('<script type="module" src="/src/main.tsx"></script>'),null);
+  assert.deepEqual(publishedAssetPaths('<link rel="stylesheet" href="/TimeAudit/assets/index-Style.css"><script type="module" src="/TimeAudit/assets/index-Code.js"></script>'),['/TimeAudit/assets/index-Style.css','/TimeAudit/assets/index-Code.js']);
+});
+
+test('update check refuses to reload when a new app asset cannot be downloaded', async () => {
+  const previousWindow=globalThis.window,previousFetch=globalThis.fetch;
+  const html='<link rel="stylesheet" href="/TimeAudit/assets/index-Style.css"><script type="module" src="/TimeAudit/assets/index-Code.js"></script>';
+  globalThis.window={location:{origin:'https://example.test'}};
+  globalThis.fetch=async url=>new Response(String(url).endsWith('.css')?'':html,{status:String(url).endsWith('.css')?404:200});
+  try{await assert.rejects(latestBundlePath('/TimeAudit/'),/Published asset unavailable \(404\)/);}
+  finally{globalThis.window=previousWindow;globalThis.fetch=previousFetch;}
 });

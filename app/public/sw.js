@@ -1,8 +1,20 @@
-const CACHE = 'time-audit-shell-v6';
+const CACHE = 'time-audit-shell-v7';
 const root = self.registration.scope;
-const shell = [root, new URL('manifest.webmanifest', root).href, new URL('icon.svg', root).href, new URL('copyright.html', root).href];
+const shell = [new URL('manifest.webmanifest', root).href, new URL('icon.svg', root).href, new URL('copyright.html', root).href];
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(shell)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const response = await fetch(root, {cache: 'reload'});
+    if (!response.ok) throw new Error(`App shell unavailable (${response.status})`);
+    const html = await response.clone().text();
+    const assets = [...html.matchAll(/(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/gi)]
+      .map(match => new URL(match[1], root).href);
+    if (!assets.some(url => url.endsWith('.js'))) throw new Error('App JavaScript asset was not found');
+    const cache = await caches.open(CACHE);
+    // Activate only when the HTML and every referenced bundle are available together.
+    await cache.addAll([...shell, ...assets]);
+    await cache.put(root, response);
+    await self.skipWaiting();
+  })());
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));

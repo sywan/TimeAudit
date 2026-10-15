@@ -1,5 +1,5 @@
-import type { AuditState, Entry } from './types';
-import { categoryOf, initialState, withV09CategoryDefaults } from './types';
+import type { AuditState, Entry, QuestionnaireResult } from './types.ts';
+import { categoryOf, initialState, withV09CategoryDefaults } from './types.ts';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3';
@@ -64,6 +64,15 @@ async function listFiles(parent:string,token:string):Promise<DriveFile[]>{
 
 export interface SyncConflict {local:Entry;remote:Entry;}
 
+export function mergeQuestionnaires(local:QuestionnaireResult[],remote:QuestionnaireResult[]):QuestionnaireResult[]{
+  const merged=new Map<string,QuestionnaireResult>();
+  for(const result of [...local,...remote]){
+    const previous=merged.get(result.id);
+    if(!previous||(result.completedAt??'')>=(previous.completedAt??''))merged.set(result.id,result);
+  }
+  return [...merged.values()].sort((a,b)=>(b.completedAt??'').localeCompare(a.completedAt??'')||a.id.localeCompare(b.id));
+}
+
 export function mergeEntries(local:Entry[],remote:Entry[]):{entries:Entry[];conflicts:SyncConflict[]}{
   const map=new Map<string,Entry>();
   const conflicts:SyncConflict[]=[];
@@ -92,13 +101,14 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     ...local,
     ...(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt ? {
       values:remoteProfile.values??local.values,goals:remoteProfile.goals??local.goals,
-      preferences:{...local.preferences,...remoteProfile.preferences},questionnaires:remoteProfile.questionnaires??local.questionnaires,
+      preferences:{...local.preferences,...remoteProfile.preferences},
       experiments:remoteProfile.experiments??local.experiments,
       customActivities:remoteProfile.customActivities??local.customActivities,
       categoryOverrides:remoteProfile.categoryOverrides??local.categoryOverrides,
       updatedAt:remoteProfile.updatedAt??local.updatedAt,
     }:{}),
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
+    questionnaires:mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),
     entries,
   });
   if(conflicts.length)return {state,conflicts,folderId};

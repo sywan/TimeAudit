@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { categoryOf, durationMinutes, getGaps, initialState, overlapMinutes, withV09CategoryDefaults } from '../src/types.ts';
 import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
 import { activityLabel, categories } from '../src/i18n.ts';
+import { mergeQuestionnaires, syncWithDrive } from '../src/drive.ts';
 import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../src/update.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
@@ -91,4 +92,28 @@ test('update check refuses to reload when a new app asset cannot be downloaded',
   globalThis.fetch=async url=>new Response(String(url).endsWith('.css')?'':html,{status:String(url).endsWith('.css')?404:200});
   try{await assert.rejects(latestBundlePath('/TimeAudit/'),/Published asset unavailable \(404\)/);}
   finally{globalThis.window=previousWindow;globalThis.fetch=previousFetch;}
+});
+
+test('Drive sync keeps a phone questionnaire when desktop settings are newer', async () => {
+  const local=initialState();
+  local.updatedAt='2026-10-16T10:00:00.000Z';
+  const result={id:'phone-ipip',instrument:'IPIP-50',version:'public-domain-50',locale:'zh-TW',responses:{'0':5},completedAt:'2026-10-15T09:00:00.000Z'};
+  const remote={updatedAt:'2026-10-15T09:00:00.000Z',questionnaires:[result]};
+  const previousFetch=globalThis.fetch;
+  let uploaded=null;
+  globalThis.fetch=async (input,init={})=>{
+    const url=new URL(String(input));
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'profile.json'"))return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
+    if(url.pathname==='/drive/v3/files')return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
+    if(url.pathname==='/drive/v3/files/profile-id')return Response.json(remote);
+    if(url.pathname==='/upload/drive/v3/files/profile-id'&&init.method==='PATCH'){uploaded=JSON.parse(init.body);return Response.json({});}
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  try{
+    const synced=await syncWithDrive(local,'test-token');
+    assert.deepEqual(synced.state.questionnaires,[result]);
+    assert.deepEqual(uploaded.questionnaires,[result]);
+  }finally{globalThis.fetch=previousFetch;}
+  assert.deepEqual(mergeQuestionnaires([result],[{...result,id:'desktop-ipip',completedAt:'2026-10-16T11:00:00.000Z'}]).map(q=>q.id),['desktop-ipip','phone-ipip']);
 });

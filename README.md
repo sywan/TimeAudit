@@ -6,7 +6,7 @@ Time Audit is a Traditional Chinese and English React app for recording and revi
 
 The hosted build supports Google sign-in when the publisher configures its OAuth Web Client ID. After authorization, users can sync their journal to their own Google Drive with the limited `drive.file` scope. A device-only preview is also available; its entries remain in that browser.
 
-**Current version:** v0.97 · Update checks verify the new code and styles before reloading. Swipe left on the daily dashboard for the next day, or right for the previous day. [Copyright notice](https://sywan.github.io/TimeAudit/copyright.html) · © 2026–2027 Shu-Yen Wan（萬書言）.
+**Current version:** v0.98 · Completed questionnaire answers merge across devices in each user’s Drive `Time Audit/profile.json`. Update checks verify the new code and styles before reloading. [Copyright notice](https://sywan.github.io/TimeAudit/copyright.html) · © 2026–2027 Shu-Yen Wan（萬書言）.
 
 ## Publisher setup
 

@@ -1,5 +1,5 @@
 import type { AuditState, Entry } from './types';
-import { categoryOf, initialState } from './types';
+import { categoryOf, initialState, withV09CategoryDefaults } from './types';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3';
@@ -87,7 +87,7 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
   const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
   const remoteEntries=(await Promise.all(monthFiles.map(f=>getJson<{entries:Entry[]}>(f,token)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
-  const state:AuditState={
+  const state:AuditState=withV09CategoryDefaults({
     ...initialState(),
     ...local,
     ...(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt ? {
@@ -100,7 +100,7 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     }:{}),
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
     entries,
-  };
+  });
   if(conflicts.length)return {state,conflicts,folderId};
   const grouped=new Map<string,Entry[]>();
   for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}

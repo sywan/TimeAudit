@@ -97,6 +97,31 @@ export function categoryOf(activityId: string, overrides: Record<string,string> 
   return overrides[activityId] ?? (activityId === 'sleep.night' ? 'rest' : activityId.startsWith('custom.') ? 'other' : activityId.split('.')[0] || 'other');
 }
 
+export function publicEquivalentForCustomName(name: string): string | null {
+  const normalized = name.normalize('NFKC').replace(/[\s/／、・·]/g,'');
+  const equivalents: Record<string,string> = {
+    '團契讀書會':'faith.fellowship', '团契读书会':'faith.fellowship',
+    '撰寫程式':'learning.programming', '编写程序':'learning.programming',
+    '打電話':'social.phone', '打电话':'social.phone',
+  };
+  return equivalents[normalized]??null;
+}
+
+// Move matching personal activities into the new public categories without changing
+// their stable IDs or overriding a category the person has already chosen.
+export function withV09CategoryDefaults(state: AuditState): AuditState {
+  const overrides = {...(state.categoryOverrides??{})};
+  let changed = false;
+  for (const activity of state.customActivities??[]) {
+    const equivalent = publicEquivalentForCustomName(activity.name);
+    if (equivalent && !Object.hasOwn(overrides,activity.id)) {
+      overrides[activity.id] = categoryOf(equivalent);
+      changed = true;
+    }
+  }
+  return changed ? {...state,categoryOverrides:overrides,updatedAt:new Date().toISOString()} : state;
+}
+
 export function getGaps(entries: Entry[], start: number, end: number): Array<[number, number]> {
   const intervals = activeEntries(entries)
     .map(e => [Math.max(start, new Date(e.startAt).getTime()), Math.min(end, new Date(e.endAt).getTime())] as [number, number])

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { categoryOf, durationMinutes, getGaps, overlapMinutes } from '../src/types.ts';
+import { categoryOf, durationMinutes, getGaps, initialState, overlapMinutes, withV09CategoryDefaults } from '../src/types.ts';
 import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
 import { activityLabel, categories } from '../src/i18n.ts';
 
@@ -44,4 +44,25 @@ test('stable activity IDs can move between logical categories without changing t
   assert.ok(categories.find(c=>c.id==='faith').activities.some(a=>a.id==='faith.prayer'));
   assert.equal(activityLabel('zh-TW','life.meal'),'吃飯／用餐');
   assert.equal(activityLabel('zh-TW','custom.fixed-id',[{id:'custom.fixed-id',name:'園藝',createdAt:''}]),'園藝');
+});
+
+test('v0.9 reclassifies matching personal activities while preserving IDs and manual choices', () => {
+  const state=initialState();
+  state.customActivities=[
+    {id:'custom.fellowship',name:'團契／讀書會',createdAt:''},
+    {id:'custom.code',name:'撰寫程式',createdAt:''},
+    {id:'custom.phone',name:'打電話',createdAt:''},
+    {id:'custom.other',name:'園藝',createdAt:''},
+  ];
+  state.categoryOverrides={'custom.code':'work'};
+  const migrated=withV09CategoryDefaults(state);
+  assert.deepEqual(migrated.customActivities,state.customActivities);
+  assert.equal(categoryOf('custom.fellowship',migrated.categoryOverrides),'faith');
+  assert.equal(categoryOf('custom.code',migrated.categoryOverrides),'work');
+  assert.equal(categoryOf('custom.phone',migrated.categoryOverrides),'social');
+  assert.equal(categoryOf('custom.other',migrated.categoryOverrides),'other');
+  assert.strictEqual(withV09CategoryDefaults(migrated),migrated);
+  assert.ok(categories.find(c=>c.id==='faith').activities.some(a=>a.id==='faith.fellowship'));
+  assert.ok(categories.find(c=>c.id==='learning').activities.some(a=>a.id==='learning.programming'));
+  assert.ok(categories.find(c=>c.id==='social').activities.some(a=>a.id==='social.phone'));
 });

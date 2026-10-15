@@ -68,3 +68,9 @@
 .activity-management select{max-width:145px;font-size:.68rem}
 @media(max-width:760px){.activity-management{grid-template-columns:1fr}.modal-backdrop{display:flex;align-items:center;justify-content:center}.entry-modal{width:100%;min-width:0;max-width:100%}.modal-body{min-width:0;overflow-x:hidden}.time-grid{grid-template-columns:minmax(0,1fr)}.time-control{min-width:0}.time-control input{width:100%;min-width:0}}
 @media(max-width:760px){.category-tabs{flex-wrap:wrap;overflow:visible;gap:5px;padding-bottom:0}.category-tabs button{min-height:34px;padding:5px 9px;border:1px solid #dce8ef;border-radius:8px;background:#f8fbfd;font-size:.68rem}.category-tabs button.active{border-color:#79a8c2;background:#e7f3f9}}
+.copyright-open{border:0;background:none;padding:0;color:#5485a5;text-decoration:underline;text-align:left;font-size:inherit;line-height:inherit}
+.copyright-dialog{width:min(620px,100%)}
+.copyright-content{color:#547285;font-size:.78rem;line-height:1.75}
+.copyright-content p{margin:0 0 15px}
+.copyright-content h3{font-size:.88rem;color:#406a85;margin:22px 0 9px}
+.copyright-owner{font-weight:700;color:#315f7c;font-size:.9rem}

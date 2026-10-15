@@ -44,3 +44,22 @@
   .mobile-nav button:hover,.mobile-nav button.active{background:#e3eff7;color:#3f789b}
   .mobile-nav button:focus-visible{outline:2px solid #4d85ab;outline-offset:2px}
 }
+
+.version-inline{font-size:.62rem;font-weight:700;color:#688fa8;letter-spacing:0;vertical-align:middle}
+.picker-caption{margin:0 0 7px;color:#7894a5;font-size:.65rem}
+.activity-options button small{display:block;color:#94aab8;font-size:.58rem}
+.activity-options button{min-height:37px}
+.new-activity-choice{display:inline-flex;align-items:center;gap:7px;min-height:37px;border:1px dashed #9ebdd0;background:#f5fafd;color:#4d819f;border-radius:8px;padding:7px 11px;font-size:.72rem;font-weight:700}
+.new-activity-choice.selected{border-style:solid;background:#e1f0f8}
+.new-activity-field{display:block;margin-top:12px;color:#5d7f94;font-size:.7rem;font-weight:700}
+.new-activity-field span,.new-activity-field small{display:block}
+.new-activity-field input{display:block;width:100%;margin-top:6px}
+.new-activity-field small{margin-top:5px;color:#91a7b5;font-size:.61rem;font-weight:400;line-height:1.5}
+.activity-catalog-card{margin-top:18px}
+.activity-catalog-card details{margin-top:14px}
+.activity-catalog-card summary{cursor:pointer;color:#4f7f9b;font-size:.76rem;font-weight:700}
+.activity-management{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 18px;margin-top:13px}
+.activity-management label{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #edf3f6;color:#58788d;font-size:.69rem}
+.activity-management select{max-width:145px;font-size:.68rem}
+@media(max-width:760px){.activity-management{grid-template-columns:1fr}.modal-backdrop{display:flex;align-items:center;justify-content:center}.entry-modal{width:100%;min-width:0;max-width:100%}.modal-body{min-width:0;overflow-x:hidden}.time-grid{grid-template-columns:minmax(0,1fr)}.time-control{min-width:0}.time-control input{width:100%;min-width:0}}
+@media(max-width:760px){.category-tabs{flex-wrap:wrap;overflow:visible;gap:5px;padding-bottom:0}.category-tabs button{min-height:34px;padding:5px 9px;border:1px solid #dce8ef;border-radius:8px;background:#f8fbfd;font-size:.68rem}.category-tabs button.active{border-color:#79a8c2;background:#e7f3f9}}

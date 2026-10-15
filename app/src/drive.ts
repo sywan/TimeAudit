@@ -1,5 +1,5 @@
 import type { AuditState, Entry } from './types';
-import { initialState } from './types';
+import { categoryOf, initialState } from './types';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3';
@@ -94,15 +94,18 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
       values:remoteProfile.values??local.values,goals:remoteProfile.goals??local.goals,
       preferences:{...local.preferences,...remoteProfile.preferences},questionnaires:remoteProfile.questionnaires??local.questionnaires,
       experiments:remoteProfile.experiments??local.experiments,
+      customActivities:remoteProfile.customActivities??local.customActivities,
+      categoryOverrides:remoteProfile.categoryOverrides??local.categoryOverrides,
       updatedAt:remoteProfile.updatedAt??local.updatedAt,
     }:{}),
+    customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
     entries,
   };
   if(conflicts.length)return {state,conflicts,folderId};
   const grouped=new Map<string,Entry[]>();
   for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
   for(const [month,items] of grouped)await putJson(`entries-${month}.json`,folderId,{schemaVersion:'0.2',entries:items},token);
-  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,experiments:state.experiments,updatedAt:state.updatedAt},token);
+  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,experiments:state.experiments,customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
   return {state,conflicts,folderId};
 }
 
@@ -121,7 +124,7 @@ export async function updateSheetMirror(state:AuditState,token:string,folderId:s
   }
   const rows=[['ID','Start','End','Minutes','Activity','Category','Importance','Urgency','Value alignment','Capture','Text']];
   for(const e of state.entries.filter(e=>!e.deletedAt)){
-    rows.push([e.id,e.startAt,e.endAt,String(Math.max(0,Math.round((Date.parse(e.endAt)-Date.parse(e.startAt))/60000))),e.activityId,e.activityId.split('.')[0],e.ratings.importance?.toString()??'',e.ratings.urgency?.toString()??'',e.ratings.valueAlignment?.toString()??'',e.captureMode,sheetCell(e.customText)]);
+    rows.push([e.id,e.startAt,e.endAt,String(Math.max(0,Math.round((Date.parse(e.endAt)-Date.parse(e.startAt))/60000))),e.activityId,categoryOf(e.activityId,state.categoryOverrides),e.ratings.importance?.toString()??'',e.ratings.urgency?.toString()??'',e.ratings.valueAlignment?.toString()??'',e.captureMode,sheetCell(e.customText)]);
   }
   await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A:K:clear`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
   for(let start=0;start<rows.length;start+=500){

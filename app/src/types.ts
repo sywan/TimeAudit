@@ -21,6 +21,7 @@ export interface Entry {
 }
 
 export interface CompassItem { id: string; text: string; }
+export interface CustomActivity { id: string; name: string; createdAt: string; }
 
 export interface Preferences {
   intervalMinutes: number;
@@ -49,6 +50,8 @@ export interface AuditState {
   preferences: Preferences;
   questionnaires: QuestionnaireResult[];
   experiments: Array<{ id: string; text: string; createdAt: string }>;
+  customActivities?: CustomActivity[];
+  categoryOverrides?: Record<string, string>;
   updatedAt: string;
 }
 
@@ -62,6 +65,8 @@ export const initialState = (): AuditState => ({
   preferences: { intervalMinutes: 30, quietStart: '22:00', quietEnd: '07:00', reminders: true, notifications: false, locale: 'zh-TW', sheetId: null },
   questionnaires: [],
   experiments: [],
+  customActivities: [],
+  categoryOverrides: {},
   updatedAt: new Date().toISOString(),
 });
 
@@ -87,7 +92,10 @@ export function overlapMinutes(entry: Pick<Entry, 'startAt' | 'endAt'>, start: n
   return Math.max(0, Math.min(new Date(entry.endAt).getTime(), end) - Math.max(new Date(entry.startAt).getTime(), start)) / 60_000;
 }
 
-export function categoryOf(activityId: string): string { return activityId.split('.')[0] || 'other'; }
+// Category is a changeable view of a stable activity ID, never part of the log's identity.
+export function categoryOf(activityId: string, overrides: Record<string,string> = {}): string {
+  return overrides[activityId] ?? (activityId === 'sleep.night' ? 'rest' : activityId.startsWith('custom.') ? 'other' : activityId.split('.')[0] || 'other');
+}
 
 export function getGaps(entries: Entry[], start: number, end: number): Array<[number, number]> {
   const intervals = activeEntries(entries)

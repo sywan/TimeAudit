@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { durationMinutes, getGaps, overlapMinutes } from '../src/types.ts';
+import { categoryOf, durationMinutes, getGaps, overlapMinutes } from '../src/types.ts';
 import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
+import { activityLabel, categories } from '../src/i18n.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 
@@ -32,4 +33,15 @@ test('local text suggestion is transparent and leaves unmatched text unclassifie
   const { suggestActivity } = await import('../src/classify.ts');
   assert.equal(suggestActivity('下午開會討論提案')?.id,'work.meeting');
   assert.equal(suggestActivity('some unrecognized personal activity'),null);
+});
+
+test('stable activity IDs can move between logical categories without changing the activity', () => {
+  assert.equal(categoryOf('sleep.night'),'rest');
+  assert.equal(categoryOf('sleep.night',{'sleep.night':'health'}),'health');
+  assert.equal(categoryOf('custom.fixed-id'),'other');
+  assert.equal(categoryOf('custom.fixed-id',{'custom.fixed-id':'faith'}),'faith');
+  assert.ok(categories.find(c=>c.id==='rest').activities.some(a=>a.id==='sleep.night'));
+  assert.ok(categories.find(c=>c.id==='faith').activities.some(a=>a.id==='faith.prayer'));
+  assert.equal(activityLabel('zh-TW','life.meal'),'吃飯／用餐');
+  assert.equal(activityLabel('zh-TW','custom.fixed-id',[{id:'custom.fixed-id',name:'園藝',createdAt:''}]),'園藝');
 });

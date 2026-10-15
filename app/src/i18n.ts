@@ -1,3 +1,5 @@
+import type { CustomActivity } from './types';
+
 export type Locale = 'zh-TW' | 'en';
 
 const zh = {
@@ -27,7 +29,7 @@ const zh = {
   exportJson:'匯出 JSON', exportCsv:'匯出 CSV', importJson:'匯入 JSON', sheet:'Google Sheet 鏡像', openSheet:'開啟試算表',
   questionnaire:'可選量表', questionnaireInfo:'量表可以略過；未填就不計算相應分數。', ipip:'五因素人格量表（IPIP-50）', later:'即將加入正式題目與計分',
   language:'介面語言', account:'帳號', signOut:'登出', privacy:'資料放在你的 Google Drive；本機保留離線快取。',
-  category_work:'工作', category_learning:'學習', category_home:'家務', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_travel:'交通', category_life:'生活', category_other:'其他',
+  category_work:'工作', category_learning:'學習', category_home:'家務', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_faith:'信仰', category_travel:'交通', category_life:'生活', category_other:'其他',
   activity_deep:'深度工作', activity_writing:'寫作／報告', activity_meeting:'會議', activity_messages:'回訊／郵件', activity_admin:'行政', activity_planning:'規劃',
   activity_reading:'閱讀', activity_course:'上課', activity_practice:'練習', activity_research:'研究',
   activity_cleaning:'清潔', activity_cooking:'煮飯', activity_shopping:'採買', activity_chores:'家務雜事',
@@ -36,8 +38,8 @@ const zh = {
   activity_exercise:'運動', activity_walk:'散步', activity_medical:'就醫', activity_meditation:'冥想',
   activity_break:'短暫休息', activity_nap:'小憩', activity_idle:'放空',
   activity_game:'遊戲', activity_video:'追劇／影片', activity_music:'音樂', activity_socialmedia:'社群媒體',
-  activity_night:'夜間睡眠', activity_commute:'通勤', activity_transit:'大眾運輸', activity_driving:'駕車',
-  activity_meal:'用餐', activity_hygiene:'盥洗', activity_other:'自訂活動',
+  activity_night:'夜間睡眠', activity_prayer:'禱告', activity_hymn:'唱詩歌', activity_bibleStudy:'查經', activity_bibleReading:'讀經', activity_devotion:'靈修', activity_worship:'敬拜／聚會', activity_commute:'通勤', activity_transit:'大眾運輸', activity_driving:'駕車',
+  activity_meal:'吃飯／用餐', activity_hygiene:'盥洗', activity_other:'自訂活動',
 };
 
 const en: Record<keyof typeof zh,string> = {
@@ -67,7 +69,7 @@ const en: Record<keyof typeof zh,string> = {
   exportJson:'Export JSON', exportCsv:'Export CSV', importJson:'Import JSON', sheet:'Google Sheet mirror', openSheet:'Open spreadsheet',
   questionnaire:'Optional questionnaires', questionnaireInfo:'You may skip questionnaires; missing answers do not receive scores.', ipip:'Five-factor inventory (IPIP-50)', later:'Official items and scoring coming next',
   language:'Language', account:'Account', signOut:'Sign out', privacy:'Data lives in your Google Drive; this device keeps an offline cache.',
-  category_work:'Work', category_learning:'Learning', category_home:'Household', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_travel:'Travel', category_life:'Daily living', category_other:'Other',
+  category_work:'Work', category_learning:'Learning', category_home:'Household', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_faith:'Faith', category_travel:'Travel', category_life:'Daily living', category_other:'Other',
   activity_deep:'Deep work', activity_writing:'Writing / report', activity_meeting:'Meeting', activity_messages:'Messages / email', activity_admin:'Administration', activity_planning:'Planning',
   activity_reading:'Reading', activity_course:'Class', activity_practice:'Practice', activity_research:'Research',
   activity_cleaning:'Cleaning', activity_cooking:'Cooking', activity_shopping:'Shopping', activity_chores:'Chores',
@@ -76,7 +78,7 @@ const en: Record<keyof typeof zh,string> = {
   activity_exercise:'Exercise', activity_walk:'Walk', activity_medical:'Medical visit', activity_meditation:'Meditation',
   activity_break:'Short break', activity_nap:'Nap', activity_idle:'Doing nothing',
   activity_game:'Gaming', activity_video:'Shows / video', activity_music:'Music', activity_socialmedia:'Social media',
-  activity_night:'Night sleep', activity_commute:'Commute', activity_transit:'Transit', activity_driving:'Driving',
+  activity_night:'Night sleep', activity_prayer:'Prayer', activity_hymn:'Singing hymns', activity_bibleStudy:'Bible study', activity_bibleReading:'Bible reading', activity_devotion:'Devotion', activity_worship:'Worship / gathering', activity_commute:'Commute', activity_transit:'Transit', activity_driving:'Driving',
   activity_meal:'Meal', activity_hygiene:'Hygiene', activity_other:'Custom activity',
 };
 
@@ -90,15 +92,17 @@ export const categories: Array<{id:string; key: TranslationKey; color:string; ac
   {id:'care',key:'category_care',color:'#b28a7b',activities:[{id:'care.child',key:'activity_child'},{id:'care.elder',key:'activity_elder'},{id:'care.pet',key:'activity_pet'}]},
   {id:'social',key:'category_social',color:'#9e88ac',activities:[{id:'social.family',key:'activity_family'},{id:'social.friends',key:'activity_friends'},{id:'social.volunteer',key:'activity_volunteer'}]},
   {id:'health',key:'category_health',color:'#719a90',activities:[{id:'health.exercise',key:'activity_exercise'},{id:'health.walk',key:'activity_walk'},{id:'health.medical',key:'activity_medical'},{id:'health.meditation',key:'activity_meditation'}]},
-  {id:'rest',key:'category_rest',color:'#a8a28e',activities:[{id:'rest.break',key:'activity_break'},{id:'rest.nap',key:'activity_nap'},{id:'rest.idle',key:'activity_idle'}]},
+  {id:'rest',key:'category_rest',color:'#a8a28e',activities:[{id:'sleep.night',key:'activity_night'},{id:'rest.break',key:'activity_break'},{id:'rest.nap',key:'activity_nap'},{id:'rest.idle',key:'activity_idle'}]},
   {id:'entertainment',key:'category_entertainment',color:'#9b90ae',activities:[{id:'entertainment.game',key:'activity_game'},{id:'entertainment.video',key:'activity_video'},{id:'entertainment.music',key:'activity_music'},{id:'entertainment.socialmedia',key:'activity_socialmedia'}]},
-  {id:'sleep',key:'category_sleep',color:'#7c90b2',activities:[{id:'sleep.night',key:'activity_night'}]},
+  {id:'faith',key:'category_faith',color:'#8b89a7',activities:[{id:'faith.prayer',key:'activity_prayer'},{id:'faith.hymn',key:'activity_hymn'},{id:'faith.bibleStudy',key:'activity_bibleStudy'},{id:'faith.bibleReading',key:'activity_bibleReading'},{id:'faith.devotion',key:'activity_devotion'},{id:'faith.worship',key:'activity_worship'}]},
   {id:'travel',key:'category_travel',color:'#91a6ab',activities:[{id:'travel.commute',key:'activity_commute'},{id:'travel.transit',key:'activity_transit'},{id:'travel.driving',key:'activity_driving'}]},
   {id:'life',key:'category_life',color:'#b8a38d',activities:[{id:'life.meal',key:'activity_meal'},{id:'life.hygiene',key:'activity_hygiene'}]},
   {id:'other',key:'category_other',color:'#a3a9af',activities:[{id:'other.custom',key:'activity_other'}]},
 ];
 
-export function activityLabel(locale: Locale, id: string) {
+export function activityLabel(locale: Locale, id: string, customActivities: CustomActivity[] = []) {
+  const custom = customActivities.find(activity=>activity.id===id);
+  if(custom)return custom.name;
   const activity = categories.flatMap(c=>c.activities).find(a=>a.id===id);
   return activity ? translate(locale, activity.key) : translate(locale,'activity_other');
 }

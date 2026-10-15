@@ -1,4 +1,4 @@
-const CACHE = 'time-audit-shell-v3';
+const CACHE = 'time-audit-shell-v4';
 const root = self.registration.scope;
 const shell = [root, new URL('manifest.webmanifest', root).href, new URL('icon.svg', root).href];
 self.addEventListener('install', event => {
@@ -9,7 +9,10 @@ self.addEventListener('activate', event => {
 });
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // An update probe must read the network; never serve or retain an old HTML copy.
+  if (url.searchParams.has('update-check')) return;
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).then(response => {
       if (response.ok) caches.open(CACHE).then(cache => cache.put(root, response.clone()));

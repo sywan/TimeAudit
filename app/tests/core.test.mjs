@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { categoryOf, durationMinutes, getGaps, initialState, overlapMinutes, withV09CategoryDefaults } from '../src/types.ts';
 import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
 import { activityLabel, categories } from '../src/i18n.ts';
+import { publishedBundlePath } from '../src/update.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 
@@ -65,4 +66,19 @@ test('v0.9 reclassifies matching personal activities while preserving IDs and ma
   assert.ok(categories.find(c=>c.id==='faith').activities.some(a=>a.id==='faith.fellowship'));
   assert.ok(categories.find(c=>c.id==='learning').activities.some(a=>a.id==='learning.programming'));
   assert.ok(categories.find(c=>c.id==='social').activities.some(a=>a.id==='social.phone'));
+});
+
+test('deep relaxation is a health activity and an existing personal ID moves there', () => {
+  const state=initialState();
+  state.customActivities=[{id:'custom.relax',name:'深入放鬆',createdAt:''}];
+  const migrated=withV09CategoryDefaults(state);
+  assert.equal(categoryOf('custom.relax',migrated.categoryOverrides),'health');
+  assert.equal(categoryOf('health.deepRelaxation'),'health');
+  assert.equal(activityLabel('zh-TW','health.deepRelaxation'),'深入放鬆');
+  assert.ok(categories.find(c=>c.id==='health').activities.some(a=>a.id==='health.deepRelaxation'));
+});
+
+test('update check reads the published content-hashed bundle, not the product version', () => {
+  assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/index-Ab12cd.js"></script>'),'/TimeAudit/assets/index-Ab12cd.js');
+  assert.equal(publishedBundlePath('<script type="module" src="/src/main.tsx"></script>'),null);
 });

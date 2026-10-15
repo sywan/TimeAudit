@@ -103,6 +103,7 @@ export function publicEquivalentForCustomName(name: string): string | null {
     '團契讀書會':'faith.fellowship', '团契读书会':'faith.fellowship',
     '撰寫程式':'learning.programming', '编写程序':'learning.programming',
     '打電話':'social.phone', '打电话':'social.phone',
+    '深入放鬆':'health.deepRelaxation', '深入放松':'health.deepRelaxation',
   };
   return equivalents[normalized]??null;
 }

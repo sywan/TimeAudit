@@ -1,6 +1,6 @@
 {
   "name": "time-audit-app",
-  "version": "0.995.0",
+  "version": "0.99.6",
   "private": true,
   "type": "module",
   "scripts": {

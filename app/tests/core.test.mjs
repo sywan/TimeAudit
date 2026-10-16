@@ -154,6 +154,9 @@ test('Drive sync restores a questionnaire from its dedicated file even when the 
 test('analysis ranges use local calendar days and clamp month ends', () => {
   const now=new Date(2026,9,16,10,40);
   assert.equal(insightWindow('today',now)[0],new Date(2026,9,16).getTime());
+  assert.equal(insightWindow('3d',now)[0],new Date(2026,9,14).getTime());
+  const [threeDayStart,threeDayEnd]=insightWindow('3d',now);
+  assert.equal(overlapMinutes({startAt:new Date(threeDayStart-3600000).toISOString(),endAt:new Date(threeDayStart+3600000).toISOString()},threeDayStart,threeDayEnd),60);
   assert.equal(insightWindow('7d',now)[0],new Date(2026,9,10).getTime());
   assert.equal(insightWindow('30d',now)[0],new Date(2026,8,17).getTime());
   assert.equal(insightWindow('6m',now)[0],new Date(2026,3,16).getTime());

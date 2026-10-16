@@ -6,6 +6,7 @@ import { activityLabel, categories } from '../src/i18n.ts';
 import { mergeQuestionnaires, syncWithDrive } from '../src/drive.ts';
 import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../src/update.ts';
 import { insightWindow } from '../src/insightRange.ts';
+import {journalSummary,journalVersionsForDay,mergeJournalVersions} from '../src/journal.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 
@@ -162,4 +163,41 @@ test('analysis ranges use local calendar days and clamp month ends', () => {
   assert.equal(insightWindow('6m',now)[0],new Date(2026,3,16).getTime());
   assert.equal(insightWindow('1y',now)[0],new Date(2025,9,16).getTime());
   assert.equal(insightWindow('6m',new Date(2026,7,31))[0],new Date(2026,1,28).getTime());
+});
+
+test('daily journal summary refreshes with later entries while personal versions stay separate', () => {
+  const audit=initialState();
+  const start=Date.parse('2026-10-16T00:00:00.000Z'),end=Date.parse('2026-10-17T00:00:00.000Z');
+  const first={id:'first',startAt:'2026-10-16T01:00:00.000Z',endAt:'2026-10-16T02:00:00.000Z',activityId:'work.deep',deletedAt:null};
+  const later={id:'later',startAt:'2026-10-16T20:00:00.000Z',endAt:'2026-10-16T21:00:00.000Z',activityId:'faith.prayer',deletedAt:null};
+  const before=journalSummary(audit,[first],'zh-TW',start,end);
+  const after=journalSummary(audit,[first,later],'zh-TW',start,end);
+  assert.match(before,/工作/);
+  assert.doesNotMatch(before,/信仰/);
+  assert.match(after,/信仰/);
+  const morning={id:'journal-morning',day:'2026-10-16',note:'今天心情平靜',updatedAt:'2026-10-16T12:00:00.000Z'};
+  const evening={id:'journal-evening',day:'2026-10-16',note:'晚上又寫了一段',updatedAt:'2026-10-16T22:00:00.000Z'};
+  const versions=mergeJournalVersions([morning],[evening]);
+  assert.deepEqual(journalVersionsForDay(versions,'2026-10-16').map(item=>item.note),['晚上又寫了一段','今天心情平靜']);
+  assert.equal(after.includes(morning.note),false);
+});
+
+test('Drive sync restores an independent daily journal despite a newer empty profile', async () => {
+  const local=initialState();local.updatedAt='2026-10-16T12:00:00.000Z';
+  const journal={id:'journal-1',day:'2026-10-15',note:'昨天的心情',updatedAt:'2026-10-15T22:00:00.000Z'};
+  const previousFetch=globalThis.fetch;
+  globalThis.fetch=async (input,init={})=>{
+    const url=new URL(String(input));
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'profile.json'"))return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'journal-"))return Response.json({files:[{id:'journal-file-id',name:'journal-journal-1.json'}]});
+    if(url.pathname==='/drive/v3/files')return Response.json({files:[{id:'profile-id',name:'profile.json'},{id:'journal-file-id',name:'journal-journal-1.json'}]});
+    if(url.pathname==='/drive/v3/files/profile-id')return Response.json({updatedAt:'2026-10-16T13:00:00.000Z',journals:[]});
+    if(url.pathname==='/drive/v3/files/journal-file-id')return Response.json({schemaVersion:'0.2',journal});
+    if(url.pathname==='/upload/drive/v3/files/journal-file-id'&&init.method==='PATCH')return Response.json({});
+    if(url.pathname==='/upload/drive/v3/files/profile-id'&&init.method==='PATCH')return Response.json({});
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  try{assert.deepEqual((await syncWithDrive(local,'test-token')).state.journals,[journal]);}
+  finally{globalThis.fetch=previousFetch;}
 });

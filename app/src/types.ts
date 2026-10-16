@@ -42,6 +42,13 @@ export interface QuestionnaireResult {
   completedAt: string | null;
 }
 
+export interface DailyJournal {
+  id: string;
+  day: string;
+  note: string;
+  updatedAt: string;
+}
+
 export interface AuditState {
   schemaVersion: '0.2';
   entries: Entry[];
@@ -49,6 +56,7 @@ export interface AuditState {
   goals: CompassItem[];
   preferences: Preferences;
   questionnaires: QuestionnaireResult[];
+  journals?: DailyJournal[];
   experiments: Array<{ id: string; text: string; createdAt: string }>;
   customActivities?: CustomActivity[];
   categoryOverrides?: Record<string, string>;
@@ -64,6 +72,7 @@ export const initialState = (): AuditState => ({
   goals: [],
   preferences: { intervalMinutes: 30, quietStart: '22:00', quietEnd: '07:00', reminders: true, notifications: false, locale: 'zh-TW', sheetId: null },
   questionnaires: [],
+  journals: [],
   experiments: [],
   customActivities: [],
   categoryOverrides: {},

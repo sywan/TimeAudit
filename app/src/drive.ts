@@ -1,5 +1,6 @@
-import type { AuditState, Entry, QuestionnaireResult } from './types.ts';
+import type { AuditState, DailyJournal, Entry, QuestionnaireResult } from './types.ts';
 import { categoryOf, initialState, withV09CategoryDefaults } from './types.ts';
+import {mergeJournalVersions} from './journal.ts';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3';
@@ -98,6 +99,11 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     const data=await getJson<{result:QuestionnaireResult}|QuestionnaireResult>(f,token);
     return 'result' in data?data.result:data;
   }))).filter(result=>result&&typeof result.id==='string');
+  const journalFiles=files.filter(f=>/^journal-.+\.json$/.test(f.name));
+  const remoteJournals=(await Promise.all(journalFiles.map(async f=>{
+    const data=await getJson<{journal:DailyJournal}|DailyJournal>(f,token);
+    return 'journal' in data?data.journal:data;
+  }))).filter(item=>item&&typeof item.id==='string');
   const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
   const remoteEntries=(await Promise.all(monthFiles.map(f=>getJson<{entries:Entry[]}>(f,token)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
@@ -114,16 +120,23 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     }:{}),
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
     questionnaires:mergeQuestionnaires(mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),remoteQuestionnaires),
+    journals:mergeJournalVersions(local.journals??[],remoteProfile?.journals??[],remoteJournals),
     entries,
   });
   // Each completed result has its own Drive file. A newer profile/settings write
   // cannot erase another device's questionnaire, including legacy profile data.
   for(const result of state.questionnaires)await putJson(`questionnaire-${encodeURIComponent(result.id)}.json`,folderId,{schemaVersion:'0.2',result},token);
+  const remoteJournalById=new Map(remoteJournals.map(item=>[item.id,item]));
+  for(const journal of state.journals??[]){
+    const previous=remoteJournalById.get(journal.id);
+    if(previous?.updatedAt===journal.updatedAt&&previous.note===journal.note)continue;
+    await putJson(`journal-${encodeURIComponent(journal.id)}.json`,folderId,{schemaVersion:'0.2',journal},token);
+  }
   if(conflicts.length)return {state,conflicts,folderId};
   const grouped=new Map<string,Entry[]>();
   for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
   for(const [month,items] of grouped)await putJson(`entries-${month}.json`,folderId,{schemaVersion:'0.2',entries:items},token);
-  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,experiments:state.experiments,customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
+  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
   return {state,conflicts,folderId};
 }
 

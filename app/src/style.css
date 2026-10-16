@@ -80,6 +80,7 @@
 .insight-info:hover,.insight-info.active{background:#e3f1f8;border-color:#90b5c8;color:#376f95}
 .insight-explanation{margin-top:20px;padding:16px 17px;border:1px solid #dceaf1;border-radius:11px;background:#f5fafd;color:#4c7188;font-size:.72rem;line-height:1.7}
 .insight-explanation strong{display:block;color:#386883;margin-bottom:9px;font-size:.78rem}
+.insight-explanation .insight-premise{padding-bottom:10px;border-bottom:1px solid #dceaf1;color:#607e8e}
 .insight-explanation p{margin:0 0 10px}
 .insight-explanation p:last-child{margin-bottom:0}
 .insight-explanation .text-button{display:inline-flex;align-items:center;gap:6px;margin-top:3px}

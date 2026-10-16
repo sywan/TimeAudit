@@ -104,6 +104,8 @@ export function publicEquivalentForCustomName(name: string): string | null {
     '撰寫程式':'learning.programming', '编写程序':'learning.programming',
     '打電話':'social.phone', '打电话':'social.phone',
     '深入放鬆':'health.deepRelaxation', '深入放松':'health.deepRelaxation',
+    '深度放鬆':'health.deepRelaxation', '深度放松':'health.deepRelaxation',
+    '洗碗塊':'home.dishes', '洗碗筷':'home.dishes', '洗碗':'home.dishes',
   };
   return equivalents[normalized]??null;
 }
@@ -115,12 +117,12 @@ export function withV09CategoryDefaults(state: AuditState): AuditState {
   let changed = false;
   for (const activity of state.customActivities??[]) {
     const equivalent = publicEquivalentForCustomName(activity.name);
-    if (equivalent && !Object.hasOwn(overrides,activity.id)) {
+    if (equivalent && (!Object.hasOwn(overrides,activity.id) || overrides[activity.id] === 'other')) {
       overrides[activity.id] = categoryOf(equivalent);
       changed = true;
     }
   }
-  return changed ? {...state,categoryOverrides:overrides,updatedAt:new Date().toISOString()} : state;
+  return changed ? {...state,categoryOverrides:overrides} : state;
 }
 
 export function getGaps(entries: Entry[], start: number, end: number): Array<[number, number]> {

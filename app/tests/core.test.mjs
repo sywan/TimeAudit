@@ -72,12 +72,20 @@ test('v0.9 reclassifies matching personal activities while preserving IDs and ma
 
 test('deep relaxation is a health activity and an existing personal ID moves there', () => {
   const state=initialState();
-  state.customActivities=[{id:'custom.relax',name:'深入放鬆',createdAt:''}];
+  state.customActivities=[{id:'custom.relax',name:'深入放鬆',createdAt:''},{id:'custom.dishes',name:'洗碗塊',createdAt:''}];
+  state.categoryOverrides={'custom.relax':'other','custom.dishes':'other'};
+  state.entries=[{id:'entry-relax',activityId:'custom.relax',startAt:'2026-10-16T01:00:00.000Z',endAt:'2026-10-16T02:00:00.000Z'},{id:'entry-dishes',activityId:'custom.dishes',startAt:'2026-10-16T02:00:00.000Z',endAt:'2026-10-16T03:00:00.000Z'}];
   const migrated=withV09CategoryDefaults(state);
   assert.equal(categoryOf('custom.relax',migrated.categoryOverrides),'health');
+  assert.equal(categoryOf('custom.dishes',migrated.categoryOverrides),'home');
+  assert.equal(migrated.customActivities[0].id,'custom.relax');
+  assert.equal(migrated.customActivities[1].id,'custom.dishes');
+  assert.deepEqual(migrated.entries,state.entries);
+  assert.equal(migrated.entries.map(e=>categoryOf(e.activityId,migrated.categoryOverrides)).includes('other'),false);
   assert.equal(categoryOf('health.deepRelaxation'),'health');
-  assert.equal(activityLabel('zh-TW','health.deepRelaxation'),'深入放鬆');
+  assert.equal(activityLabel('zh-TW','health.deepRelaxation'),'深度放鬆');
   assert.ok(categories.find(c=>c.id==='health').activities.some(a=>a.id==='health.deepRelaxation'));
+  assert.ok(categories.find(c=>c.id==='home').activities.some(a=>a.id==='home.dishes'));
 });
 
 test('update check reads the published content-hashed bundle, not the product version', () => {
@@ -95,19 +103,21 @@ test('update check refuses to reload when a new app asset cannot be downloaded',
   finally{globalThis.window=previousWindow;globalThis.fetch=previousFetch;}
 });
 
-test('Drive sync keeps a phone questionnaire when desktop settings are newer', async () => {
+test('Drive sync keeps a phone questionnaire in its own file when desktop settings are newer', async () => {
   const local=initialState();
   local.updatedAt='2026-10-16T10:00:00.000Z';
   const result={id:'phone-ipip',instrument:'IPIP-50',version:'public-domain-50',locale:'zh-TW',responses:{'0':5},completedAt:'2026-10-15T09:00:00.000Z'};
   const remote={updatedAt:'2026-10-15T09:00:00.000Z',questionnaires:[result]};
   const previousFetch=globalThis.fetch;
-  let uploaded=null;
+  let uploaded=null,questionnaireUploaded=false;
   globalThis.fetch=async (input,init={})=>{
     const url=new URL(String(input));
     if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
     if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'profile.json'"))return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'questionnaire-"))return Response.json({files:[]});
     if(url.pathname==='/drive/v3/files')return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
     if(url.pathname==='/drive/v3/files/profile-id')return Response.json(remote);
+    if(url.pathname==='/upload/drive/v3/files'&&init.method==='POST'){questionnaireUploaded=String(init.body).includes('phone-ipip');return Response.json({id:'questionnaire-id'});}
     if(url.pathname==='/upload/drive/v3/files/profile-id'&&init.method==='PATCH'){uploaded=JSON.parse(init.body);return Response.json({});}
     throw new Error(`Unexpected request: ${url}`);
   };
@@ -115,8 +125,30 @@ test('Drive sync keeps a phone questionnaire when desktop settings are newer', a
     const synced=await syncWithDrive(local,'test-token');
     assert.deepEqual(synced.state.questionnaires,[result]);
     assert.deepEqual(uploaded.questionnaires,[result]);
+    assert.equal(questionnaireUploaded,true);
   }finally{globalThis.fetch=previousFetch;}
   assert.deepEqual(mergeQuestionnaires([result],[{...result,id:'desktop-ipip',completedAt:'2026-10-16T11:00:00.000Z'}]).map(q=>q.id),['desktop-ipip','phone-ipip']);
+});
+
+test('Drive sync restores a questionnaire from its dedicated file even when the profile has none', async () => {
+  const local=initialState();
+  local.updatedAt='2026-10-16T12:00:00.000Z';
+  const result={id:'phone-ipip',instrument:'IPIP-50',version:'public-domain-50',locale:'zh-TW',responses:{'0':5},completedAt:'2026-10-15T09:00:00.000Z'};
+  const previousFetch=globalThis.fetch;
+  globalThis.fetch=async (input,init={})=>{
+    const url=new URL(String(input));
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'profile.json'"))return Response.json({files:[{id:'profile-id',name:'profile.json'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'questionnaire-"))return Response.json({files:[{id:'questionnaire-id',name:'questionnaire-phone-ipip.json'}]});
+    if(url.pathname==='/drive/v3/files')return Response.json({files:[{id:'profile-id',name:'profile.json'},{id:'questionnaire-id',name:'questionnaire-phone-ipip.json'}]});
+    if(url.pathname==='/drive/v3/files/profile-id')return Response.json({updatedAt:'2026-10-16T13:00:00.000Z',questionnaires:[]});
+    if(url.pathname==='/drive/v3/files/questionnaire-id')return Response.json({schemaVersion:'0.2',result});
+    if(url.pathname==='/upload/drive/v3/files/questionnaire-id'&&init.method==='PATCH')return Response.json({});
+    if(url.pathname==='/upload/drive/v3/files/profile-id'&&init.method==='PATCH')return Response.json({});
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  try{assert.deepEqual((await syncWithDrive(local,'test-token')).state.questionnaires,[result]);}
+  finally{globalThis.fetch=previousFetch;}
 });
 
 test('analysis ranges use local calendar days and clamp month ends', () => {

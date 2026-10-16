@@ -93,6 +93,11 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
   const files=await listFiles(folderId,token);
   const profileFile=files.find(f=>f.name==='profile.json');
   const remoteProfile=profileFile?await getJson<Partial<AuditState>>(profileFile,token):null;
+  const questionnaireFiles=files.filter(f=>/^questionnaire-.+\.json$/.test(f.name));
+  const remoteQuestionnaires=(await Promise.all(questionnaireFiles.map(async f=>{
+    const data=await getJson<{result:QuestionnaireResult}|QuestionnaireResult>(f,token);
+    return 'result' in data?data.result:data;
+  }))).filter(result=>result&&typeof result.id==='string');
   const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
   const remoteEntries=(await Promise.all(monthFiles.map(f=>getJson<{entries:Entry[]}>(f,token)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
@@ -108,9 +113,12 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
       updatedAt:remoteProfile.updatedAt??local.updatedAt,
     }:{}),
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
-    questionnaires:mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),
+    questionnaires:mergeQuestionnaires(mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),remoteQuestionnaires),
     entries,
   });
+  // Each completed result has its own Drive file. A newer profile/settings write
+  // cannot erase another device's questionnaire, including legacy profile data.
+  for(const result of state.questionnaires)await putJson(`questionnaire-${encodeURIComponent(result.id)}.json`,folderId,{schemaVersion:'0.2',result},token);
   if(conflicts.length)return {state,conflicts,folderId};
   const grouped=new Map<string,Entry[]>();
   for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}

@@ -74,3 +74,13 @@
 .copyright-content p{margin:0 0 15px}
 .copyright-content h3{font-size:.88rem;color:#406a85;margin:22px 0 9px}
 .copyright-owner{font-weight:700;color:#315f7c;font-size:.9rem}
+.insight-range{flex-wrap:wrap;justify-content:flex-end;max-width:100%}
+.insight-range button{white-space:nowrap}
+.insight-info{width:31px;height:31px;display:grid;place-items:center;flex:0 0 31px;border:1px solid #d6e6ee;border-radius:50%;background:#f7fbfd;color:#5b89a4}
+.insight-info:hover,.insight-info.active{background:#e3f1f8;border-color:#90b5c8;color:#376f95}
+.insight-explanation{margin-top:20px;padding:16px 17px;border:1px solid #dceaf1;border-radius:11px;background:#f5fafd;color:#4c7188;font-size:.72rem;line-height:1.7}
+.insight-explanation strong{display:block;color:#386883;margin-bottom:9px;font-size:.78rem}
+.insight-explanation p{margin:0 0 10px}
+.insight-explanation p:last-child{margin-bottom:0}
+.insight-explanation .text-button{display:inline-flex;align-items:center;gap:6px;margin-top:3px}
+@media(max-width:760px){.insights-header{align-items:flex-start;flex-direction:column}.insight-range{justify-content:flex-start}.insight-range button{padding:7px 8px}}

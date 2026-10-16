@@ -5,6 +5,7 @@ import { ipipItems, scoreIpip } from '../src/questionnaire.ts';
 import { activityLabel, categories } from '../src/i18n.ts';
 import { mergeQuestionnaires, syncWithDrive } from '../src/drive.ts';
 import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../src/update.ts';
+import { insightWindow } from '../src/insightRange.ts';
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 
@@ -116,4 +117,14 @@ test('Drive sync keeps a phone questionnaire when desktop settings are newer', a
     assert.deepEqual(uploaded.questionnaires,[result]);
   }finally{globalThis.fetch=previousFetch;}
   assert.deepEqual(mergeQuestionnaires([result],[{...result,id:'desktop-ipip',completedAt:'2026-10-16T11:00:00.000Z'}]).map(q=>q.id),['desktop-ipip','phone-ipip']);
+});
+
+test('analysis ranges use local calendar days and clamp month ends', () => {
+  const now=new Date(2026,9,16,10,40);
+  assert.equal(insightWindow('today',now)[0],new Date(2026,9,16).getTime());
+  assert.equal(insightWindow('7d',now)[0],new Date(2026,9,10).getTime());
+  assert.equal(insightWindow('30d',now)[0],new Date(2026,8,17).getTime());
+  assert.equal(insightWindow('6m',now)[0],new Date(2026,3,16).getTime());
+  assert.equal(insightWindow('1y',now)[0],new Date(2025,9,16).getTime());
+  assert.equal(insightWindow('6m',new Date(2026,7,31))[0],new Date(2026,1,28).getTime());
 });

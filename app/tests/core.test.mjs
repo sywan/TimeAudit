@@ -19,6 +19,7 @@ test('work outside a personal time window counts actual union minutes and distin
   const entries=[{activityId:'work.deep',startAt:at(8*60),endAt:at(10*60)},{activityId:'work.meeting',startAt:at(8*60+30),endAt:at(9*60+30)}];
   const result=workOutsideHours(entries,state,Date.parse(at(0)),Date.parse(at(24*60)),'09:00','17:00');
   assert.deepEqual(result,{minutes:60,days:1});
+  assert.deepEqual(workOutsideHours(entries,state,Date.parse(at(0)),Date.parse(at(24*60)),'22:00','06:00'),{minutes:120,days:1});
 });
 
 test('insight feedback keeps the most recently updated choice across devices',()=>{

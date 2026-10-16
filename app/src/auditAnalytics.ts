@@ -51,16 +51,20 @@ export function weeklyRhythm(entries:Entry[],audit:AuditState,start:number,end:n
 export function workOutsideHours(entries:Entry[],audit:AuditState,start:number,end:number,workStart:string,workEnd:string){
   const parse=(value:string)=>{const match=/^(\d{2}):(\d{2})$/.exec(value);return match?Number(match[1])*60+Number(match[2]):NaN;};
   const from=parse(workStart),to=parse(workEnd);
-  if(!Number.isFinite(from)||!Number.isFinite(to)||from>=to||to>1440)return {minutes:0,days:0};
+  if(!Number.isFinite(from)||!Number.isFinite(to)||from===to||from>1440||to>1440)return {minutes:0,days:0};
   const work=entries.filter(e=>categoryOf(e.activityId,audit.categoryOverrides)==='work');
   let total=0,days=0;
   const first=new Date(start);
   for(let day=new Date(first.getFullYear(),first.getMonth(),first.getDate());day.getTime()<end;day=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1)){
     const dayStart=day.getTime(),dayEnd=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1).getTime();
     const a=Math.max(start,dayStart),b=Math.min(end,dayEnd);
-    const insideStart=Math.max(a,new Date(day.getFullYear(),day.getMonth(),day.getDate(),Math.floor(from/60),from%60).getTime());
-    const insideEnd=Math.min(b,new Date(day.getFullYear(),day.getMonth(),day.getDate(),Math.floor(to/60),to%60).getTime());
-    const outside=unionMinutes(work,a,b)-(insideEnd>insideStart?unionMinutes(work,insideStart,insideEnd):0);
+    const localTime=(minute:number)=>new Date(day.getFullYear(),day.getMonth(),day.getDate(),Math.floor(minute/60),minute%60).getTime();
+    const intervals=from<to?[[from,to]]:[[0,to],[from,1440]];
+    const inside=intervals.reduce((sum,[left,right])=>{
+      const x=Math.max(a,localTime(left)),y=Math.min(b,localTime(right));
+      return sum+(y>x?unionMinutes(work,x,y):0);
+    },0);
+    const outside=unionMinutes(work,a,b)-inside;
     if(outside>0){total+=outside;days++;}
   }
   return {minutes:total,days};

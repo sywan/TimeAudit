@@ -90,6 +90,9 @@
 .journal-paper:focus-within{border-color:#8db5cc;box-shadow:0 0 0 3px #cfe4f280}
 .journal-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .journal-actions small,.journal-message,.journal-interim{color:#7790a0;font-size:.68rem;line-height:1.55}
+.journal-voice-starting{display:inline-flex;align-items:center;gap:7px;color:#527a96;font-size:.69rem;font-weight:700}
+.journal-voice-starting:before{content:'';width:11px;height:11px;border:2px solid #bdd3df;border-top-color:#527a96;border-radius:50%;animation:journal-spin .8s linear infinite}
+@keyframes journal-spin{to{transform:rotate(360deg)}}
 .journal-listening{color:#a7445c;border-color:#e4bac5;background:#fff5f7}
 .journal-wave{height:26px;display:inline-flex;align-items:center;gap:7px;color:#4d85ab;font-size:.69rem;font-weight:700}
 .journal-wave-bars{display:inline-flex;align-items:center;gap:3px}
@@ -100,6 +103,12 @@
 .journal-wave-hearing i{animation-duration:.55s;opacity:1}
 @keyframes journal-pulse{0%,100%{height:6px}50%{height:21px}}
 @media(prefers-reduced-motion:reduce){.journal-wave i{animation:none;height:12px}}
+.dictation-guide-backdrop{position:fixed;inset:0;z-index:1000;background:#20384b88;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.dictation-guide{position:relative;width:min(100%,430px);padding:26px 24px 28px;border-radius:18px;background:#fff;color:#294b60;box-shadow:0 16px 48px #20384b40}
+.dictation-guide>svg{color:#4d85ab}
+.dictation-guide h3{margin:13px 0 8px;font-size:1.05rem}
+.dictation-guide p{color:#597a90;font-size:.82rem;line-height:1.7;margin-bottom:20px}
+.dictation-guide-close{position:absolute;right:16px;top:15px}
 .journal-message,.journal-interim{margin:10px 0 0}
 .journal-history{margin-top:16px;border-top:1px solid #e5edf2;padding-top:12px;color:#6d8999;font-size:.7rem}
 .journal-history summary{cursor:pointer;font-weight:700}

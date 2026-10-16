@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
-import {Mic,Square} from 'lucide-react';
+import {Keyboard,Mic,Square,X} from 'lucide-react';
 import {journalSummary,journalVersionsForDay} from './journal.ts';
 import {preferKeyboardDictation,speechText,type SpeechEvent} from './dictation.ts';
 import type {AuditState,DailyJournal,Entry} from './types.ts';
@@ -31,12 +31,15 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
   const [voicePhase,setVoicePhase]=useState<VoicePhase>('idle');
   const [interim,setInterim]=useState('');
   const [message,setMessage]=useState('');
+  const [keyboardGuide,setKeyboardGuide]=useState(false);
   const sessionId=useRef(crypto.randomUUID());
   const draftRef=useRef(draft);
   const editing=useRef(false);
   const voiceSession=useRef<VoiceSession|null>(null);
   const textareaRef=useRef<HTMLTextAreaElement>(null);
   const summary=journalSummary(audit,entries,locale,start,end);
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||Boolean((navigator as Navigator & {standalone?:boolean}).standalone);
+  const keyboardOnly=preferKeyboardDictation(navigator.userAgent,standalone,navigator.maxTouchPoints)||!voiceConstructor();
 
   useEffect(()=>{
     if(!editing.current){const incoming=latest?.note??'';draftRef.current=incoming;setDraft(incoming);}
@@ -78,15 +81,14 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
       active.stopTimer=window.setTimeout(()=>finishVoice(active),3000);
       return;
     }
-    const standalone=window.matchMedia('(display-mode: standalone)').matches||Boolean((navigator as Navigator & {standalone?:boolean}).standalone);
     if(preferKeyboardDictation(navigator.userAgent,standalone,navigator.maxTouchPoints)){
-      setMessage(locale==='zh-TW'?'iPhone 主畫面 App 的網頁語音辨識可能卡住；已開啟日記欄，請按鍵盤上的麥克風口述。':'Speech recognition can stall in an iPhone Home Screen app. Use the microphone on your keyboard in the journal field.');
-      textareaRef.current?.focus();return;
+      setKeyboardGuide(true);
+      return;
     }
     const Constructor=voiceConstructor();
     if(!Constructor){
-      setMessage(locale==='zh-TW'?'此瀏覽器未提供網頁語音辨識；可點入日記欄，使用手機鍵盤的麥克風口述。':'This browser does not expose web speech recognition. You can use your keyboard’s dictation button in the journal field.');
-      textareaRef.current?.focus();return;
+      setKeyboardGuide(true);
+      return;
     }
     let recognition:VoiceRecognition;
     try{recognition=new Constructor();}
@@ -136,9 +138,10 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
       <label className="journal-label" htmlFor={`journal-${day}`}>{locale==='zh-TW'?'我的心情與筆記':'My thoughts and notes'}</label>
       <textarea ref={textareaRef} id={`journal-${day}`} value={draft} onChange={event=>update(event.target.value)} placeholder={locale==='zh-TW'?'今天發生了什麼？有什麼心情或想記下的事？':'What happened today? What would you like to remember?'} rows={6}/>
     </div>
-    <div className="journal-actions"><button className={`secondary-button compact ${voicePhase!=='idle'?'journal-listening':''}`} type="button" aria-pressed={voicePhase!=='idle'} onClick={startVoice}>{voicePhase==='idle'?<Mic size={16}/>:<Square size={16}/>} {voicePhase==='idle'?(locale==='zh-TW'?'口述日記':'Dictate'):voicePhase==='processing'?(locale==='zh-TW'?'正在結束…':'Finishing…'):(locale==='zh-TW'?'停止口述':'Stop dictation')}</button>{(voicePhase==='listening'||voicePhase==='hearing')&&<span className={`journal-wave ${voicePhase==='hearing'?'journal-wave-hearing':''}`} role="status"><span className="journal-wave-bars" aria-hidden="true"><i/><i/><i/><i/><i/></span>{locale==='zh-TW'?'正在聆聽':'Listening'}</span>}<small>{locale==='zh-TW'?'語音辨識由瀏覽器／系統提供，可能使用其語音服務；首次使用會詢問麥克風權限。':'Speech recognition is provided by your browser or system and may use its speech service; microphone permission may be requested.'}</small></div>
+    <div className="journal-actions"><button className={`secondary-button compact ${voicePhase!=='idle'?'journal-listening':''}`} type="button" aria-pressed={voicePhase!=='idle'} onClick={startVoice}>{voicePhase==='idle'?(keyboardOnly?<Keyboard size={16}/>:<Mic size={16}/>):<Square size={16}/>} {voicePhase==='idle'?(keyboardOnly?(locale==='zh-TW'?'使用鍵盤口述':'Use keyboard dictation'):(locale==='zh-TW'?'口述日記':'Dictate')):voicePhase==='processing'?(locale==='zh-TW'?'正在結束…':'Finishing…'):(locale==='zh-TW'?'停止口述':'Stop dictation')}</button>{(voicePhase==='listening'||voicePhase==='hearing')&&<span className={`journal-wave ${voicePhase==='hearing'?'journal-wave-hearing':''}`} role="status"><span className="journal-wave-bars" aria-hidden="true"><i/><i/><i/><i/><i/></span>{locale==='zh-TW'?'正在聆聽':'Listening'}</span>}{voicePhase==='starting'&&<span className="journal-voice-starting" role="status">{locale==='zh-TW'?'正在啟動收音…':'Starting audio…'}</span>}<small>{keyboardOnly?(locale==='zh-TW'?'此模式使用系統鍵盤上的麥克風，按此查看操作步驟。':'This mode uses the microphone on your system keyboard. Tap for instructions.'):(locale==='zh-TW'?'語音辨識由瀏覽器／系統提供，可能使用其語音服務；首次使用會詢問麥克風權限。':'Speech recognition is provided by your browser or system and may use its speech service; microphone permission may be requested.')}</small></div>
     {interim&&<p className="journal-interim" role="status">{interim}</p>}
-    {message&&<p className="journal-message" role="status">{message}</p>}
+    {message&&<p className="journal-message" role="status">{message} {!keyboardOnly&&voicePhase==='idle'&&<button type="button" className="text-button" onClick={()=>setKeyboardGuide(true)}>{locale==='zh-TW'?'改用鍵盤口述':'Use keyboard dictation'}</button>}</p>}
+    {keyboardGuide&&<div className="dictation-guide-backdrop" onClick={()=>setKeyboardGuide(false)}><div className="dictation-guide" role="dialog" aria-modal="true" aria-labelledby="dictation-guide-title" onClick={event=>event.stopPropagation()}><button className="icon-button dictation-guide-close" type="button" aria-label={locale==='zh-TW'?'關閉':'Close'} onClick={()=>setKeyboardGuide(false)}><X size={18}/></button><Keyboard size={24}/><h3 id="dictation-guide-title">{locale==='zh-TW'?'使用鍵盤麥克風口述':'Dictate with your keyboard'}</h3><p>{locale==='zh-TW'?'此瀏覽器模式無法由網頁直接啟動語音辨識。先點日記文字欄，再點手機鍵盤上的麥克風；說出的話會直接寫進日記。':'This browser mode cannot start speech recognition from the webpage. Tap the journal field, then tap the microphone on your phone keyboard. Your words will appear in the journal.'}</p><button className="primary-button" type="button" onClick={()=>{setKeyboardGuide(false);textareaRef.current?.focus();}}>{locale==='zh-TW'?'前往日記欄':'Go to journal field'}</button></div></div>}
     {versions.length>1&&<details className="journal-history"><summary>{locale==='zh-TW'?`先前版本（${versions.length-1}）`:`Earlier versions (${versions.length-1})`}</summary><div>{versions.slice(1).map(version=><div key={version.id}><span>{new Date(version.updatedAt).toLocaleString(locale)} · {version.note.slice(0,70)||'—'}</span><button className="text-button" onClick={()=>update(version.note)}>{locale==='zh-TW'?'還原':'Restore'}</button></div>)}</div></details>}
   </section>;
 }

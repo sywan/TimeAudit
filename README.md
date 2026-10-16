@@ -1,34 +1,67 @@
 # Time Audit
 
-Time Audit is a Traditional Chinese and English React app for recording and reviewing how time is spent.
+**目前開發版本：V1.05版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
-**Public app:** https://sywan.github.io/TimeAudit/
+A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
-The hosted build supports Google sign-in when the publisher configures its OAuth Web Client ID. After authorization, users can sync their journal to their own Google Drive with the limited `drive.file` scope. A device-only preview is also available; its entries remain in that browser.
+## Current features
 
-**Current version:** v1.0.1 · The dictation button now shows an immediate startup state. iPhone Home Screen apps show a visible keyboard dictation guide instead of an apparently inactive microphone button. Daily journal notes still sync to the user’s own Drive. [Copyright notice](https://sywan.github.io/TimeAudit/copyright.html) · © 2026–2027 Shu-Yen Wan（萬書言）.
+- Editable start and end times, 5-minute adjustment buttons, activity chips, custom descriptions, three optional 1–7 ratings, and an optional 1–7 activity feeling rating.
+- Sleep and rest entries, month calendar, day timeline, and backfilling gaps.
+- Local, explainable keyword suggestions for free text; the user confirms the category and keeps the original description.
+- Duration-weighted category, rating, importance × urgency, and goal charts, including separate unrecorded and unrated time. Data quality, 7×24 weekly rhythm, and work recorded outside user-selected hours are also shown.
+- An optional daily mood rating in the journal and exploratory mood comparisons with data sufficiency checks.
+- Weekly evidence cards with source links and usefulness feedback, plus saved if–then experiments with baseline and review snapshots.
+- Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.
+- Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
+- Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
 
-## Publisher setup
+The [product specification](./TimeAudit-Specification.md) and [reviewable HTML version](./TimeAudit-Specification.html) are in the repository root.
 
-1. In **Settings → Pages**, choose **GitHub Actions** as the source.
-2. In **Settings → Secrets and variables → Actions → Variables**, add `VITE_GOOGLE_CLIENT_ID` with the OAuth **Web application Client ID**. This is a public identifier, not a client secret.
-3. In **Actions**, run **Publish Time Audit** again. The build reads that variable and publishes the app.
+The [publisher launch guide](./GOOGLE-LAUNCH-GUIDE.md) explains Google OAuth, public access, and testing steps. The GitHub Pages app does not depend on the publisher's computer being on.
 
-The OAuth client's Authorized JavaScript origin for this site is `https://sywan.github.io` (without `/TimeAudit/`). Google Drive API and Google Sheets API must be enabled in that Google Cloud project. Use a Google account listed as a test user while the OAuth app is in Testing mode.
+For the public GitHub Pages deployment, use the shorter [Google sign-in setup steps](./GOOGLE-GITHUB-STEPS.md). The Pages site is `https://sywan.github.io/TimeAudit/` and the in-app header lets users switch between Traditional Chinese and English at any time.
 
-## Development
+## Run locally
 
 ```sh
 cd app
-npm ci
+npm install
 npm run dev
 ```
 
-The `app` folder contains only app code and public site assets. No journal data, book excerpts, credentials, or client secret are stored in this repository.
+Open `http://127.0.0.1:5173`. Without a Google OAuth client ID, the landing page offers a **device-only preview** with sample entries. Preview data is not synced to Drive.
 
-## 同步本機程式與 GitHub / Sync a local checkout
+## Enable Google sign-in for everyone
 
-這些指令同步的是**程式碼**，不會下載任何使用者的時間紀錄。已在 Codex 的 `TimeAudit` 工作資料夾中時，公開網站對應的 Git checkout 是 **`.github-pages-source`**。先在終端機進入它：
+The app publisher performs this setup once. End users only click the Google sign-in button and grant Drive access in Google's consent window. A browser-only app cannot create its own Google OAuth registration at runtime.
+
+1. In Google Cloud, create or select a project and configure the OAuth consent screen. Add any test users while the app is in testing mode.
+2. Enable **Google Drive API** and **Google Sheets API**.
+3. Create an **OAuth 2.0 Web application** client. Add the local and deployed site origins under Authorized JavaScript origins, for example `http://127.0.0.1:5173` and the final `https://…` site origin.
+4. Copy `app/.env.example` to `app/.env.local` and set `VITE_GOOGLE_CLIENT_ID`. For deployment, provide that build variable in the hosting build environment and rebuild.
+
+The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests only `https://www.googleapis.com/auth/drive.file`. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use.
+
+## Current limits
+
+- Google authentication and Drive sync depend on the publisher's OAuth configuration and each user's authorization. Device-only preview entries stay in that browser.
+- Reminders work while the web app is open. Notifications after the browser is closed require a push subscription, scheduler, and server service; these are not yet part of this static deployment.
+- Reflections describe observed patterns and do not diagnose psychological traits. IPIP scores are raw scores, not clinical assessments or population percentiles.
+- Cross-device edits to the same entry at the same revision require conflict resolution in Settings.
+
+## Build
+
+```sh
+cd app
+npm run build
+```
+
+The production files are written to `app/dist`.
+
+## 將公開版同步到本機
+
+在這個 Codex 工作資料夾中，`.github-pages-source` 是 GitHub Pages 對應的獨立 checkout；外層 `TimeAudit` 可能另有尚未提交的修改。要取得 GitHub 公開版的最新**程式碼**，在工作資料夾根目錄執行：
 
 ```sh
 cd .github-pages-source
@@ -39,6 +72,4 @@ git pull --ff-only origin main
 git log -1 --oneline
 ```
 
-若是在另一台電腦第一次取得程式，先執行 `git clone https://github.com/sywan/TimeAudit.git`、`cd TimeAudit`，再從 `git status -sb` 開始。`fetch` 取得 GitHub 的最新提交資訊；`pull --ff-only` 只在可以安全地快轉時更新本機 `main`。日後在本機修改並提交後，才用 `git push origin main` 發佈；推送成功後，GitHub Actions 會重新部署 Pages。
-
-執行 `pull` 前先看 `git status -sb`：若有未提交的檔案，先提交或暫存；若顯示本機與 GitHub 已分叉，`--ff-only` 會停止，此時應先檢查差異並處理提交，不要用 `reset --hard` 強制覆蓋。Codex 工作資料夾的**外層** `TimeAudit` 是另一個 checkout，可能有獨立提交及未提交變更；不要把上述指令直接套到外層，以免混淆兩份歷史。
+首次在另一台電腦使用，先執行 `git clone https://github.com/sywan/TimeAudit.git` 並 `cd TimeAudit`，再從 `git status -sb` 開始。執行前若有未提交的修改，先提交或暫存；若本機與遠端已分叉，`pull --ff-only` 會停止，請先檢查差異，勿用 `reset --hard` 覆蓋。`fetch` 取得遠端最新資訊，`pull --ff-only` 將安全的最新提交帶到本機。只有在本機修改並提交後，才需要 `git push origin main` 發佈到 GitHub。這些指令處理程式碼，與 App 內使用者的時間紀錄同步無關。

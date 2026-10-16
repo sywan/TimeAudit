@@ -9,6 +9,7 @@ export interface Entry {
   customText: string;
   classification?: { method: 'user' | 'rule_confirmed'; confidence: number; matched?: string };
   ratings: Record<RatingKey, Rating>;
+  feeling?: Rating; // 1 very unpleasant, 7 very pleasant; absent on legacy entries.
   ratingStatus: Record<RatingKey, 'answered' | 'not_applicable'>;
   valueIds: string[];
   goalIds: string[];
@@ -31,6 +32,8 @@ export interface Preferences {
   notifications: boolean;
   locale: 'zh-TW' | 'en';
   sheetId: string | null;
+  workStart?: string;
+  workEnd?: string;
 }
 
 export interface QuestionnaireResult {
@@ -46,8 +49,17 @@ export interface DailyJournal {
   id: string;
   day: string;
   note: string;
+  mood?: Rating; // Daily mood is separate from each activity's in-the-moment feeling.
   updatedAt: string;
 }
+export interface Experiment {
+  id:string; text:string; createdAt:string;
+  ifContext?:string; thenAction?:string; metric?:string; reviewAt?:string;
+  status?:'active'|'continue'|'adjust'|'stop'; resultNote?:string; updatedAt?:string;
+  baselineStart?:string; baselineEnd?:string; baselineCoverage?:number; baselineRecorded?:number; baselineEntries?:number;
+  reviewCoverage?:number; reviewRecorded?:number; reviewEntries?:number;
+}
+export interface InsightFeedback { id:string; decision:'helpful'|'not_applicable'; updatedAt:string; }
 
 export interface AuditState {
   schemaVersion: '0.2';
@@ -57,7 +69,8 @@ export interface AuditState {
   preferences: Preferences;
   questionnaires: QuestionnaireResult[];
   journals?: DailyJournal[];
-  experiments: Array<{ id: string; text: string; createdAt: string }>;
+  experiments: Experiment[];
+  insightFeedback?: InsightFeedback[];
   customActivities?: CustomActivity[];
   categoryOverrides?: Record<string, string>;
   updatedAt: string;
@@ -70,10 +83,11 @@ export const initialState = (): AuditState => ({
   entries: [],
   values: [],
   goals: [],
-  preferences: { intervalMinutes: 30, quietStart: '22:00', quietEnd: '07:00', reminders: true, notifications: false, locale: 'zh-TW', sheetId: null },
+  preferences: { intervalMinutes: 30, quietStart: '22:00', quietEnd: '07:00', reminders: true, notifications: false, locale: 'zh-TW', sheetId: null, workStart: '09:00', workEnd: '17:00' },
   questionnaires: [],
   journals: [],
   experiments: [],
+  insightFeedback: [],
   customActivities: [],
   categoryOverrides: {},
   updatedAt: new Date().toISOString(),

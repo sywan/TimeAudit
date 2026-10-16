@@ -28,6 +28,7 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
   const versions=journalVersionsForDay(audit.journals??[],day);
   const latest=versions[0];
   const [draft,setDraft]=useState(latest?.note??'');
+  const [mood,setMood]=useState<number|null>(latest?.mood??null);
   const [voicePhase,setVoicePhase]=useState<VoicePhase>('idle');
   const [interim,setInterim]=useState('');
   const [message,setMessage]=useState('');
@@ -42,7 +43,7 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
   const keyboardOnly=preferKeyboardDictation(navigator.userAgent,standalone,navigator.maxTouchPoints)||!voiceConstructor();
 
   useEffect(()=>{
-    if(!editing.current){const incoming=latest?.note??'';draftRef.current=incoming;setDraft(incoming);}
+    if(!editing.current){const incoming=latest?.note??'';draftRef.current=incoming;setDraft(incoming);setMood(latest?.mood??null);}
   },[latest?.id,latest?.updatedAt]);
   useEffect(()=>()=>{
     const session=voiceSession.current;
@@ -59,7 +60,7 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
     editing.current=true;
     draftRef.current=next;
     setDraft(next);
-    save({id:sessionId.current,day,note:next,updatedAt:new Date().toISOString()});
+    save({id:sessionId.current,day,note:next,mood,updatedAt:new Date().toISOString()});
   };
   const finishVoice=(session:VoiceSession,notice='')=>{
     if(voiceSession.current!==session)return;
@@ -135,6 +136,7 @@ export default function DailyJournalCard({audit,entries,day,start,end,locale,sav
     <div className="section-head"><div><span className="overline">DAILY JOURNAL</span><h2>{locale==='zh-TW'?'這一天的日記':'Daily journal'}</h2></div><span className="journal-save-note">{locale==='zh-TW'?'自動儲存 · 連結 Drive 後可同步':'Autosaved · syncs when Drive is connected'}</span></div>
     <div className="journal-paper">
       <div className="journal-auto"><small>{locale==='zh-TW'?'由活動紀錄整理 · 會自動更新':'From your activity entries · updates automatically'}</small><p>{summary}</p></div>
+      <div className="journal-mood"><strong>{locale==='zh-TW'?'這一天整體的心情':'Overall mood today'}</strong><small>{locale==='zh-TW'?'1 非常不好 · 4 平淡 · 7 非常好；與每段活動感受分開':'1 very low · 4 neutral · 7 very good; separate from activity feelings'}</small><div className="rating-choices" role="group" aria-label={locale==='zh-TW'?'每日心情':'Daily mood'}>{[1,2,3,4,5,6,7].map(n=><button key={n} type="button" className={mood===n?'selected':''} aria-pressed={mood===n} onClick={()=>{setMood(n);editing.current=true;save({id:sessionId.current,day,note:draftRef.current,mood:n,updatedAt:new Date().toISOString()});}}>{n}</button>)}<button type="button" className={`na-button ${mood===null?'selected':''}`} onClick={()=>{setMood(null);editing.current=true;save({id:sessionId.current,day,note:draftRef.current,mood:null,updatedAt:new Date().toISOString()});}}>{locale==='zh-TW'?'略過':'Skip'}</button></div></div>
       <label className="journal-label" htmlFor={`journal-${day}`}>{locale==='zh-TW'?'我的心情與筆記':'My thoughts and notes'}</label>
       <textarea ref={textareaRef} id={`journal-${day}`} value={draft} onChange={event=>update(event.target.value)} placeholder={locale==='zh-TW'?'今天發生了什麼？有什麼心情或想記下的事？':'What happened today? What would you like to remember?'} rows={6}/>
     </div>

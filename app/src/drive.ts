@@ -1,6 +1,8 @@
 import type { AuditState, DailyJournal, Entry, QuestionnaireResult } from './types.ts';
 import { categoryOf, initialState, withV09CategoryDefaults } from './types.ts';
 import {mergeJournalVersions} from './journal.ts';
+import {mergeExperiments} from './experiments.ts';
+import {mergeInsightFeedback} from './insightFeedback.ts';
 
 const DRIVE='https://www.googleapis.com/drive/v3';
 const UPLOAD='https://www.googleapis.com/upload/drive/v3';
@@ -104,6 +106,16 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     const data=await getJson<{journal:DailyJournal}|DailyJournal>(f,token);
     return 'journal' in data?data.journal:data;
   }))).filter(item=>item&&typeof item.id==='string');
+  const experimentFiles=files.filter(f=>/^experiment-.+\.json$/.test(f.name));
+  const remoteExperiments=(await Promise.all(experimentFiles.map(async f=>{
+    const data=await getJson<{experiment:AuditState['experiments'][number]}|AuditState['experiments'][number]>(f,token);
+    return 'experiment' in data?data.experiment:data;
+  }))).filter(item=>item&&typeof item.id==='string');
+  const feedbackFiles=files.filter(f=>/^insight-feedback-.+\.json$/.test(f.name));
+  const remoteFeedback=(await Promise.all(feedbackFiles.map(async f=>{
+    const data=await getJson<{feedback:NonNullable<AuditState['insightFeedback']>[number]}|NonNullable<AuditState['insightFeedback']>[number]>(f,token);
+    return 'feedback' in data?data.feedback:data;
+  }))).filter(item=>item&&typeof item.id==='string');
   const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
   const remoteEntries=(await Promise.all(monthFiles.map(f=>getJson<{entries:Entry[]}>(f,token)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
@@ -113,7 +125,7 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     ...(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt ? {
       values:remoteProfile.values??local.values,goals:remoteProfile.goals??local.goals,
       preferences:{...local.preferences,...remoteProfile.preferences},
-      experiments:remoteProfile.experiments??local.experiments,
+      experiments:mergeExperiments(local.experiments??[],remoteProfile.experiments??[]),
       customActivities:remoteProfile.customActivities??local.customActivities,
       categoryOverrides:remoteProfile.categoryOverrides??local.categoryOverrides,
       updatedAt:remoteProfile.updatedAt??local.updatedAt,
@@ -121,6 +133,8 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
     questionnaires:mergeQuestionnaires(mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),remoteQuestionnaires),
     journals:mergeJournalVersions(local.journals??[],remoteProfile?.journals??[],remoteJournals),
+    experiments:mergeExperiments(local.experiments??[],remoteProfile?.experiments??[],remoteExperiments),
+    insightFeedback:mergeInsightFeedback(local.insightFeedback??[],remoteProfile?.insightFeedback??[],remoteFeedback),
     entries,
   });
   // Each completed result has its own Drive file. A newer profile/settings write
@@ -129,14 +143,25 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
   const remoteJournalById=new Map(remoteJournals.map(item=>[item.id,item]));
   for(const journal of state.journals??[]){
     const previous=remoteJournalById.get(journal.id);
-    if(previous?.updatedAt===journal.updatedAt&&previous.note===journal.note)continue;
+    if(previous?.updatedAt===journal.updatedAt&&previous.note===journal.note&&previous.mood===journal.mood)continue;
     await putJson(`journal-${encodeURIComponent(journal.id)}.json`,folderId,{schemaVersion:'0.2',journal},token);
+  }
+  const remoteExperimentById=new Map(remoteExperiments.map(item=>[item.id,item]));
+  for(const experiment of state.experiments??[]){
+    const previous=remoteExperimentById.get(experiment.id);
+    if(previous&&JSON.stringify(previous)===JSON.stringify(experiment))continue;
+    await putJson(`experiment-${encodeURIComponent(experiment.id)}.json`,folderId,{schemaVersion:'0.2',experiment},token);
+  }
+  const remoteFeedbackById=new Map(remoteFeedback.map(item=>[item.id,item]));
+  for(const feedback of state.insightFeedback??[]){
+    if(JSON.stringify(remoteFeedbackById.get(feedback.id))===JSON.stringify(feedback))continue;
+    await putJson(`insight-feedback-${encodeURIComponent(feedback.id)}.json`,folderId,{schemaVersion:'0.2',feedback},token);
   }
   if(conflicts.length)return {state,conflicts,folderId};
   const grouped=new Map<string,Entry[]>();
   for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
   for(const [month,items] of grouped)await putJson(`entries-${month}.json`,folderId,{schemaVersion:'0.2',entries:items},token);
-  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
+  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,insightFeedback:state.insightFeedback??[],customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
   return {state,conflicts,folderId};
 }
 
@@ -153,13 +178,13 @@ export async function updateSheetMirror(state:AuditState,token:string,folderId:s
     if(removeParents)params.set('removeParents',removeParents);
     await api(`${DRIVE}/files/${sheetId}?${params}`,token,{method:'PATCH'});
   }
-  const rows=[['ID','Start','End','Minutes','Activity','Category','Importance','Urgency','Value alignment','Capture','Text']];
+  const rows=[['ID','Start','End','Minutes','Activity','Category','Importance','Urgency','Value alignment','Feeling','Capture','Text']];
   for(const e of state.entries.filter(e=>!e.deletedAt)){
-    rows.push([e.id,e.startAt,e.endAt,String(Math.max(0,Math.round((Date.parse(e.endAt)-Date.parse(e.startAt))/60000))),e.activityId,categoryOf(e.activityId,state.categoryOverrides),e.ratings.importance?.toString()??'',e.ratings.urgency?.toString()??'',e.ratings.valueAlignment?.toString()??'',e.captureMode,sheetCell(e.customText)]);
+    rows.push([e.id,e.startAt,e.endAt,String(Math.max(0,Math.round((Date.parse(e.endAt)-Date.parse(e.startAt))/60000))),e.activityId,categoryOf(e.activityId,state.categoryOverrides),e.ratings.importance?.toString()??'',e.ratings.urgency?.toString()??'',e.ratings.valueAlignment?.toString()??'',e.feeling?.toString()??'',e.captureMode,sheetCell(e.customText)]);
   }
-  await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A:K:clear`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A:L:clear`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
   for(let start=0;start<rows.length;start+=500){
-    await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A${start+1}:K${Math.min(start+500,rows.length)}?valueInputOption=RAW`,token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:rows.slice(start,start+500)})});
+    await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A${start+1}:L${Math.min(start+500,rows.length)}?valueInputOption=RAW`,token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:rows.slice(start,start+500)})});
   }
   return sheetId;
 }

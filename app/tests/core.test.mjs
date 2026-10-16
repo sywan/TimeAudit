@@ -8,6 +8,66 @@ import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../s
 import { insightWindow } from '../src/insightRange.ts';
 import {journalSummary,journalVersionsForDay,mergeJournalVersions} from '../src/journal.ts';
 import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
+import {dataQuality,weeklyRhythm,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
+import {mergeExperiments} from '../src/experiments.ts';
+import {mergeInsightFeedback} from '../src/insightFeedback.ts';
+
+test('work outside a personal time window counts actual union minutes and distinct days',()=>{
+  const state=initialState();
+  const day=new Date(2026,9,15);
+  const at=(offset)=>new Date(day.getFullYear(),day.getMonth(),day.getDate(),0,offset).toISOString();
+  const entries=[{activityId:'work.deep',startAt:at(8*60),endAt:at(10*60)},{activityId:'work.meeting',startAt:at(8*60+30),endAt:at(9*60+30)}];
+  const result=workOutsideHours(entries,state,Date.parse(at(0)),Date.parse(at(24*60)),'09:00','17:00');
+  assert.deepEqual(result,{minutes:60,days:1});
+});
+
+test('insight feedback keeps the most recently updated choice across devices',()=>{
+  const a={id:'week:urgent',decision:'helpful',updatedAt:'2026-10-15T10:00:00Z'};
+  const b={...a,decision:'not_applicable',updatedAt:'2026-10-16T10:00:00Z'};
+  assert.deepEqual(mergeInsightFeedback([b],[a]),[b]);
+});
+
+test('quality and rhythm use actual minutes and preserve missing feelings',()=>{
+  const state=initialState();
+  const start=Date.parse('2026-10-15T20:00:00.000Z'),end=Date.parse('2026-10-16T02:00:00.000Z');
+  const base={ratings:{importance:6,urgency:null,valueAlignment:5},captureMode:'backfill',recallConfidence:'low',activityId:'work.deep'};
+  const entries=[
+    {...base,id:'a',startAt:new Date(start).toISOString(),endAt:new Date(start+3*3600000).toISOString(),feeling:2},
+    {...base,id:'b',startAt:new Date(start+2*3600000).toISOString(),endAt:new Date(start+4*3600000).toISOString()},
+  ];
+  const quality=dataQuality(entries,start,end);
+  assert.equal(quality.recorded,240);
+  assert.equal(quality.missing,120);
+  assert.equal(quality.overlap,60);
+  assert.equal(quality.feeling,180);
+  assert.equal(quality.backfill,240);
+  assert.equal(quality.rated.urgency,0);
+  const rhythm=weeklyRhythm(entries,state,start,end,'work');
+  assert.equal(rhythm.flat().reduce((a,b)=>a+b,0),240);
+  const byCategory=feelingByCategory(entries,state,start,end);
+  assert.equal(byCategory[0].average,2);
+  assert.equal(byCategory[0].minutes,180);
+});
+
+test('a completed experiment survives an older profile copy',()=>{
+  const old={id:'exp',text:'若忙則停一下',createdAt:'2026-10-15T00:00:00Z'};
+  const updated={...old,status:'continue',resultNote:'有幫助',updatedAt:'2026-10-23T00:00:00Z'};
+  assert.deepEqual(mergeExperiments([updated],[old]),[updated]);
+});
+
+test('mood comparison needs rated and sufficiently covered days in both groups',()=>{
+  const state=initialState(),entries=[],journals=[];
+  for(let day=1;day<=6;day++){
+    const start=new Date(2026,9,day),end=new Date(2026,9,day+1);
+    entries.push({id:`day-${day}`,activityId:day<=3?'work.deep':'rest.break',startAt:start.toISOString(),endAt:end.toISOString()});
+    journals.push({id:`mood-${day}`,day:`2026-10-${String(day).padStart(2,'0')}`,note:'',mood:day<=3?6:4,updatedAt:start.toISOString()});
+  }
+  const result=moodAssociations(entries,journals,state,['work'])[0];
+  assert.equal(result.comparable,true);
+  assert.deepEqual([result.withDays,result.withoutDays,result.withAverage,result.withoutAverage],[3,3,6,4]);
+  entries.pop();
+  assert.equal(moodAssociations(entries,journals,state,['work'])[0].comparable,false);
+});
 
 test('iPhone Home Screen dictation avoids exposed but unreliable web speech recognition', () => {
   assert.equal(preferKeyboardDictation('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',true),true);

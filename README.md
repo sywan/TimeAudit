@@ -6,7 +6,7 @@ Time Audit is a Traditional Chinese and English React app for recording and revi
 
 The hosted build supports Google sign-in when the publisher configures its OAuth Web Client ID. After authorization, users can sync their journal to their own Google Drive with the limited `drive.file` scope. A device-only preview is also available; its entries remain in that browser.
 
-**Current version:** v0.9990 · Each day has a journal with an automatically updated activity summary and separate personal notes. Notes can be typed or dictated through supported browser speech recognition, and journal versions sync to the user’s own Drive. Reflection and insight period controls remain available. The copyright notice stays inside Settings. [Copyright notice](https://sywan.github.io/TimeAudit/copyright.html) · © 2026–2027 Shu-Yen Wan（萬書言）.
+**Current version:** v1.0 · Dictation now recovers from stalled browser sessions and visibly indicates when audio is active. iPhone Home Screen apps can use the keyboard microphone when WebKit speech recognition is unreliable. Daily journal notes still sync to the user’s own Drive. [Copyright notice](https://sywan.github.io/TimeAudit/copyright.html) · © 2026–2027 Shu-Yen Wan（萬書言）.
 
 ## Publisher setup
 

@@ -91,6 +91,15 @@
 .journal-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .journal-actions small,.journal-message,.journal-interim{color:#7790a0;font-size:.68rem;line-height:1.55}
 .journal-listening{color:#a7445c;border-color:#e4bac5;background:#fff5f7}
+.journal-wave{height:26px;display:inline-flex;align-items:center;gap:7px;color:#4d85ab;font-size:.69rem;font-weight:700}
+.journal-wave-bars{display:inline-flex;align-items:center;gap:3px}
+.journal-wave i{display:block;width:3px;height:7px;border-radius:3px;background:currentColor;animation:journal-pulse 1.15s ease-in-out infinite;opacity:.7}
+.journal-wave i:nth-child(2),.journal-wave i:nth-child(4){animation-delay:.16s}
+.journal-wave i:nth-child(3){animation-delay:.32s}
+.journal-wave-hearing{color:#b35f76}
+.journal-wave-hearing i{animation-duration:.55s;opacity:1}
+@keyframes journal-pulse{0%,100%{height:6px}50%{height:21px}}
+@media(prefers-reduced-motion:reduce){.journal-wave i{animation:none;height:12px}}
 .journal-message,.journal-interim{margin:10px 0 0}
 .journal-history{margin-top:16px;border-top:1px solid #e5edf2;padding-top:12px;color:#6d8999;font-size:.7rem}
 .journal-history summary{cursor:pointer;font-weight:700}

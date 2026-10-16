@@ -7,6 +7,19 @@ import { mergeQuestionnaires, syncWithDrive } from '../src/drive.ts';
 import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../src/update.ts';
 import { insightWindow } from '../src/insightRange.ts';
 import {journalSummary,journalVersionsForDay,mergeJournalVersions} from '../src/journal.ts';
+import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
+
+test('iPhone Home Screen dictation avoids exposed but unreliable web speech recognition', () => {
+  assert.equal(preferKeyboardDictation('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',true),true);
+  assert.equal(preferKeyboardDictation('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',false),false);
+  assert.equal(preferKeyboardDictation('Mozilla/5.0 (Macintosh; Intel Mac OS X)',true,0),false);
+  assert.equal(preferKeyboardDictation('Mozilla/5.0 (Macintosh; Intel Mac OS X)',true,5),true);
+});
+
+test('speech text uses only newly reported final and interim results', () => {
+  const event={resultIndex:1,results:[{0:{transcript:'already saved'},isFinal:true},{0:{transcript:'今天的日記'},isFinal:true},{0:{transcript:'還在說話'},isFinal:false}]};
+  assert.deepEqual(speechText(event),{final:'今天的日記',interim:'還在說話'});
+});
 
 const entry = (startAt, endAt) => ({ id: crypto.randomUUID(), startAt, endAt, deletedAt: null });
 

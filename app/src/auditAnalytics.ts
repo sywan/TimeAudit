@@ -46,6 +46,28 @@ export function weeklyRhythm(entries:Entry[],audit:AuditState,start:number,end:n
   return cells;
 }
 
+// Split each weekday/hour cell into category minutes. Overlapping entries are
+// assigned to the earlier entry so the coloured pieces never double-count.
+export function weeklyRhythmComposition(entries:Entry[],audit:AuditState,start:number,end:number){
+  const cells=Array.from({length:7},()=>Array.from({length:24},()=>new Map<string,number>()));
+  let lastEnd=start;
+  for(const entry of [...entries].sort((a,b)=>Date.parse(a.startAt)-Date.parse(b.startAt))){
+    let cursor=Math.max(Date.parse(entry.startAt),start,lastEnd);
+    const stop=Math.min(Date.parse(entry.endAt),end);
+    lastEnd=Math.max(lastEnd,stop);
+    const category=categoryOf(entry.activityId,audit.categoryOverrides);
+    while(cursor<stop){
+      const date=new Date(cursor);
+      const boundary=new Date(date.getFullYear(),date.getMonth(),date.getDate(),date.getHours()+1).getTime();
+      const next=Math.min(stop,boundary);
+      const bucket=cells[(date.getDay()+6)%7][date.getHours()];
+      bucket.set(category,(bucket.get(category)??0)+(next-cursor)/60000);
+      cursor=next;
+    }
+  }
+  return cells.map(day=>day.map(bucket=>[...bucket].sort(([a],[b])=>a.localeCompare(b)).map(([category,minutes])=>({category,minutes}))));
+}
+
 // A user-defined daily reference window. Both the minutes and day count use
 // the union of recorded work intervals, so overlapping entries count once.
 export function workOutsideHours(entries:Entry[],audit:AuditState,start:number,end:number,workStart:string,workEnd:string){

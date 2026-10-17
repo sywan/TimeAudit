@@ -8,7 +8,7 @@ import { latestBundlePath, publishedAssetPaths, publishedBundlePath } from '../s
 import { insightWindow } from '../src/insightRange.ts';
 import {journalSummary,journalVersionsForDay,mergeJournalVersions} from '../src/journal.ts';
 import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
-import {dataQuality,weeklyRhythm,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
+import {dataQuality,weeklyRhythm,weeklyRhythmComposition,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
 import {mergeExperiments} from '../src/experiments.ts';
 import {mergeInsightFeedback} from '../src/insightFeedback.ts';
 
@@ -48,6 +48,25 @@ test('quality and rhythm use actual minutes and preserve missing feelings',()=>{
   const byCategory=feelingByCategory(entries,state,start,end);
   assert.equal(byCategory[0].average,2);
   assert.equal(byCategory[0].minutes,180);
+});
+
+test('mixed-category rhythm cells use category minutes without double counting overlaps',()=>{
+  const state=initialState();
+  const day=new Date(2026,9,15);
+  const at=(minute)=>new Date(day.getFullYear(),day.getMonth(),day.getDate(),9,minute).toISOString();
+  const entries=[
+    {activityId:'work.deep',startAt:at(0),endAt:at(30)},
+    {activityId:'learning.reading',startAt:at(20),endAt:at(40)},
+    {activityId:'rest.break',startAt:at(30),endAt:at(60)},
+  ];
+  const start=Date.parse(at(0)),end=Date.parse(at(60));
+  const weekday=(day.getDay()+6)%7;
+  assert.deepEqual(weeklyRhythmComposition(entries,state,start,end)[weekday][9],[
+    {category:'learning',minutes:10},{category:'rest',minutes:20},{category:'work',minutes:30},
+  ]);
+  assert.equal(weeklyRhythm(entries,state,start,end,'all')[weekday][9],60);
+  state.categoryOverrides={'learning.reading':'faith'};
+  assert.equal(weeklyRhythmComposition(entries,state,start,end)[weekday][9].find(item=>item.category==='faith')?.minutes,10);
 });
 
 test('a completed experiment survives an older profile copy',()=>{

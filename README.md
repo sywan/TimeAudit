@@ -1,6 +1,6 @@
 # Time Audit
 
-**目前開發版本：V1.05版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.06版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -9,7 +9,7 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 - Editable start and end times, 5-minute adjustment buttons, activity chips, custom descriptions, three optional 1–7 ratings, and an optional 1–7 activity feeling rating.
 - Sleep and rest entries, month calendar, day timeline, and backfilling gaps.
 - Local, explainable keyword suggestions for free text; the user confirms the category and keeps the original description.
-- Duration-weighted category, rating, importance × urgency, and goal charts, including separate unrecorded and unrated time. Data quality, 7×24 weekly rhythm, and work recorded outside user-selected hours are also shown.
+- Duration-weighted category, rating, importance × urgency, and goal charts, including separate unrecorded and unrated time. Data quality, a 7×24 weekly rhythm with category-coloured hour segments, and work recorded outside user-selected hours are also shown.
 - An optional daily mood rating in the journal and exploratory mood comparisons with data sufficiency checks.
 - Weekly evidence cards with source links and usefulness feedback, plus saved if–then experiments with baseline and review snapshots.
 - Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.

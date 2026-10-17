@@ -205,7 +205,7 @@
 .logo-story-trigger:hover img{filter:brightness(1.06)}
 .logo-story-trigger:focus-visible{outline:3px solid #78a9c7;outline-offset:4px}
 .logo-story-trigger .brand-logo.large{margin:0}
-.welcome-card>.logo-story-trigger{margin:0 auto 24px}
+.welcome-card>.logo-story-trigger{display:grid;margin:0 auto 24px}
 .logo-story-popover{position:fixed;z-index:100;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:18px 20px;border:1px solid #c9dfe9;border-radius:14px;background:#fff;color:#3a5b70;box-shadow:0 14px 38px #22475d38;font-size:.82rem;line-height:1.75}
 .logo-story-popover strong{display:block;margin-bottom:9px;color:#24495f;font-size:.9rem;line-height:1.45}
 .logo-story-popover p{margin:0}

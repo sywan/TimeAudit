@@ -1,6 +1,6 @@
 # Time Audit
 
-**目前開發版本：V1.07版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.08版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -15,7 +15,7 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 - Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.
 - Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
 - Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
-- Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CUNP (God/神 edition) or English NASB 2020.
+- Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CCBT (當代譯本) or English NASB 2020. The Time Audit logo appears in the app, home screen icon, and browser tab.
 
 The [product specification](./TimeAudit-Specification.md) and [reviewable HTML version](./TimeAudit-Specification.html) are in the repository root.
 
@@ -48,7 +48,7 @@ The ID is a public browser client identifier, not a secret. Do not put a client 
 
 The app runs without YouVersion credentials. Its Today card links to the selected day’s [official Verse of the Day](https://www.bible.com/verse-of-the-day). To display the text inside Time Audit:
 
-1. [Register an application with YouVersion Platform](https://platform.youversion.com/) and obtain an App Key. Request access to the **CUNP-神** (version 46) and **NASB2020** (version 2692) translations and accept any required publisher agreements.
+1. [Register an application with YouVersion Platform](https://platform.youversion.com/) and obtain an App Key. The app uses **CCBT 當代譯本** (version 1392) and **NASB2020** (version 2692); accept the required publisher agreements. The previously requested CUNP-神 is available on Bible.com but was absent from the Platform API catalog when V1.08 was prepared.
 2. For local development, add `VITE_YOUVERSION_APP_KEY` to `app/.env.local`. For GitHub Pages, add a repository Actions variable named `VITE_YOUVERSION_APP_KEY`, then rerun **Publish Time Audit**. The workflow already passes this variable to the build. Browser build variables are visible to site visitors, so use only a key that YouVersion permits in a public web application; never enter a private server credential or publisher secret here.
 3. Verify the Today card in both languages and on two dates. If API access or a translation license is unavailable, the card keeps the YouVersion link instead of showing a different translation.
 

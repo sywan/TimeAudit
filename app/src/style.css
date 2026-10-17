@@ -190,3 +190,13 @@
 .account-menu [role="menuitem"]:hover,.account-menu [role="menuitem"]:focus-visible{background:#edf5f9;outline:none}
 #reminder-settings{scroll-margin-top:96px}
 @media(max-width:760px){.account-menu-wrap{display:none}#reminder-settings{scroll-margin-top:130px}}
+
+/* Time Audit identity: a time ring around the A for Audit. */
+.brand-logo{display:block;width:38px;height:38px;flex:0 0 38px;border-radius:11px;box-shadow:0 8px 18px #416e8b29}
+.brand-logo.large{width:58px;height:58px;margin:0 auto 24px;border-radius:16px}
+.hero-head{display:flex;align-items:center;gap:17px;margin-bottom:11px}
+.hero-head>div{min-width:0}
+.hero-head h1{margin:6px 0 0}
+.hero-logo{display:block;width:69px;height:69px;flex:0 0 69px;border-radius:16px;box-shadow:0 12px 23px #416e8b2b}
+.hero-intro>p{max-width:560px}
+@media(max-width:760px){.hero-head{gap:12px}.hero-logo{width:55px;height:55px;flex-basis:55px;border-radius:13px}}

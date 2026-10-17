@@ -177,3 +177,16 @@
 @media(prefers-reduced-motion:reduce){.sync-progress-track.indeterminate i{animation:none;width:100%;opacity:.55}}
 
 .daily-verse-copyright{display:block;max-height:3.1em;overflow:auto;color:#849aa7;font-size:.53rem;line-height:1.45}
+
+.account-menu-wrap{position:relative;display:flex;align-items:center}
+.account-menu-wrap .top-avatar{border:0;padding:0;cursor:pointer}
+.account-menu-wrap .top-avatar img{width:100%;height:100%;object-fit:cover}
+.account-menu-wrap .top-avatar:hover,.account-menu-wrap .top-avatar[aria-expanded="true"]{outline:2px solid #8bb6cf;outline-offset:2px}
+.account-menu{position:absolute;right:0;top:calc(100% + 13px);z-index:60;width:215px;background:white;border:1px solid #dbe8ef;border-radius:11px;box-shadow:0 13px 32px #25465f26;padding:7px;color:#3d637c}
+.account-menu-identity{padding:9px 11px 11px;border-bottom:1px solid #e7eff4;min-width:0}
+.account-menu-identity strong,.account-menu-identity small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-menu-identity strong{font-size:.76rem}.account-menu-identity small{font-size:.62rem;color:#829aa9;margin-top:3px}
+.account-menu [role="menuitem"]{width:100%;border:0;background:transparent;border-radius:7px;padding:10px 11px;color:#4f758e;font-size:.73rem;font-weight:700;text-align:left}
+.account-menu [role="menuitem"]:hover,.account-menu [role="menuitem"]:focus-visible{background:#edf5f9;outline:none}
+#reminder-settings{scroll-margin-top:96px}
+@media(max-width:760px){.account-menu-wrap{display:none}#reminder-settings{scroll-margin-top:130px}}

@@ -53,8 +53,8 @@ export default function DailyVerse({date,locale}:{date:string;locale:Locale}){
 
   const zh=locale==='zh-TW';
   const visible=currentYear&&verse?.key===key?verse:null;
-  return <aside className="daily-verse" aria-label={zh?'當日經文':'Verse for this day'}>
-    <div className="daily-verse-heading"><span className="daily-verse-mark" aria-hidden="true">✦</span><span>{zh?'當日經文':'Verse for this day'}</span></div>
+  return <aside className="daily-verse" aria-label={zh?'當日經文':'Verse of the Day'}>
+    <div className="daily-verse-heading"><span className="daily-verse-mark" aria-hidden="true">✦</span><span>{zh?'當日經文':'Verse of the Day'}</span></div>
     {visible?<><p className="daily-verse-text" aria-live="polite">{visible.text}</p><div className="daily-verse-foot"><strong>{visible.reference}</strong><a href={passageUrl} target="_blank" rel="noreferrer">{bible.label} ↗</a></div><small className="daily-verse-copyright">{visible.copyright}</small></>:<><p className="daily-verse-text daily-verse-placeholder" aria-live="polite">{status==='otherYear'?(zh?'YouVersion 目前沒有可查詢該年份的每日經文。':'YouVersion does not provide a year-specific daily verse for this date.'):status==='loading'?(zh?'正在載入經文…':'Loading verse…'):status==='needsKey'?(zh?'到 YouVersion 閱讀，並選擇當代譯本。':'Read on YouVersion and select NASB 2020.'):(zh?'目前無法載入經文，請到 YouVersion 閱讀。':'The verse could not be loaded. Read it on YouVersion.')}</p><div className="daily-verse-foot"><span>{zh?'偏好：':'Preferred: '}{bible.label}</span>{currentYear&&<a href={dailyUrl} target="_blank" rel="noreferrer">{zh?'開啟 YouVersion ↗':'Open YouVersion ↗'}</a>}</div></>}
   </aside>;
 }

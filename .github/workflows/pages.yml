@@ -28,6 +28,7 @@ jobs:
         working-directory: app
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_YOUVERSION_APP_KEY: ${{ vars.VITE_YOUVERSION_APP_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

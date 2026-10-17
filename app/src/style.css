@@ -191,6 +191,17 @@
 #reminder-settings{scroll-margin-top:96px}
 @media(max-width:760px){.account-menu-wrap{display:none}#reminder-settings{scroll-margin-top:130px}}
 
+.sidebar-account-wrap{position:relative}
+.sidebar-profile-button{display:none}
+.sidebar-profile-name{flex:1;min-width:0;text-align:left}
+@media(max-width:760px){
+  .sidebar-profile-static{display:none}
+  .sidebar-profile-button{display:flex;width:calc(100% - 10px);padding:18px 0 0;border-right:0;border-bottom:0;border-left:0;background:transparent;color:#3d637c;text-align:left;cursor:pointer}
+  .sidebar-profile-button:hover,.sidebar-profile-button[aria-expanded="true"]{color:#376f95}
+  .sidebar-profile-button:focus-visible{outline:2px solid #4d85ab;outline-offset:3px}
+  .sidebar-account-menu{top:auto;right:5px;bottom:calc(100% + 8px);left:5px;width:auto}
+}
+
 /* Time Audit identity: a time ring around the A for Audit. */
 .brand-logo{display:block;width:38px;height:38px;flex:0 0 38px;border-radius:11px;box-shadow:0 8px 18px #416e8b29}
 .brand-logo.large{width:58px;height:58px;margin:0 auto 24px;border-radius:16px}

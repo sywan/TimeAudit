@@ -70,11 +70,13 @@ function App(){
   const [toast,setToast]=useState<string>('');
   const [mobileNav,setMobileNav]=useState(false);
   const [accountMenuOpen,setAccountMenuOpen]=useState(false);
+  const [sidebarAccountOpen,setSidebarAccountOpen]=useState(false);
   const [fontScale,setFontScale]=useState(()=>Math.max(1,Math.min(1.5,Number(localStorage.getItem('timeAuditFontScale')??1.15)||1.15)));
   const [sidebarWidth,setSidebarWidth]=useState(()=>Math.max(220,Math.min(380,Number(localStorage.getItem('timeAuditSidebarWidth')??260)||260)));
   const [installPrompt,setInstallPrompt]=useState<InstallPromptEvent|null>(null);
   const googleButton=useRef<HTMLDivElement>(null);
   const accountMenu=useRef<HTMLDivElement>(null);
+  const sidebarAccountMenu=useRef<HTMLDivElement>(null);
   const lastSynced=useRef<string>('');
   const syncLock=useRef(false);
   const locale=audit.preferences.locale;
@@ -112,6 +114,14 @@ function App(){
     document.addEventListener('keydown',closeEscape);
     return()=>{document.removeEventListener('pointerdown',closeOutside);document.removeEventListener('keydown',closeEscape);};
   },[accountMenuOpen]);
+  useEffect(()=>{
+    if(!sidebarAccountOpen)return;
+    const closeOutside=(event:PointerEvent)=>{if(event.target instanceof Node&&!sidebarAccountMenu.current?.contains(event.target))setSidebarAccountOpen(false);};
+    const closeEscape=(event:KeyboardEvent)=>{if(event.key==='Escape')setSidebarAccountOpen(false);};
+    document.addEventListener('pointerdown',closeOutside);
+    document.addEventListener('keydown',closeEscape);
+    return()=>{document.removeEventListener('pointerdown',closeOutside);document.removeEventListener('keydown',closeEscape);};
+  },[sidebarAccountOpen]);
 
   const startSidebarResize=(event:React.PointerEvent<HTMLDivElement>)=>{
     event.preventDefault();
@@ -215,9 +225,9 @@ function App(){
   };
   const navItems:Array<{id:Page;icon:React.ElementType;key:TranslationKey}>=[{id:'today',icon:Clock3,key:'today'},{id:'calendar',icon:CalendarDays,key:'calendar'},{id:'insights',icon:BarChart3,key:'insights'},{id:'reflection',icon:Compass,key:'reflection'},{id:'settings',icon:Settings2,key:'settings'}];
 
-  const openPage=(destination:Page)=>{if(destination==='today')setViewDay(shortDate(new Date()));setPage(destination);setMobileNav(false);};
+  const openPage=(destination:Page)=>{if(destination==='today')setViewDay(shortDate(new Date()));setPage(destination);setMobileNav(false);setSidebarAccountOpen(false);};
   const openReminderSettings=()=>{setPage('settings');setAccountMenuOpen(false);setTimeout(()=>document.getElementById('reminder-settings')?.scrollIntoView({behavior:'smooth',block:'start'}),0);};
-  const signOut=()=>{setAccountMenuOpen(false);signOutGoogle();setProfile(null);setToken(null);setLoaded(false);};
+  const signOut=()=>{setAccountMenuOpen(false);setSidebarAccountOpen(false);setMobileNav(false);signOutGoogle();setProfile(null);setToken(null);setLoaded(false);};
 
   if(!profile)return <div className="welcome-screen"><div className="welcome-orbit orbit-a"/><div className="welcome-orbit orbit-b"/><div className="welcome-card"><LogoStory locale={welcomeLocale} src={publicPath('logo-v108.svg')} imageClassName="brand-logo large"/><span className="overline">TIME AUDIT</span><h1>{translate(welcomeLocale,'welcome')}</h1><p>{translate(welcomeLocale,'welcomeText')}</p><div className="welcome-actions">{googleClientId?<div ref={googleButton} className="google-button"/>:<div className="setup-note"><ShieldCheck size={18}/>{translate(welcomeLocale,'googleNotReady')}</div>}<button className="link-button" onClick={()=>setProfile({sub:'demo',name:'Demo',email:'',demo:true})}>{translate(welcomeLocale,'startPreview')} <ArrowRight size={16}/></button></div><div className="welcome-foot"><a href={publicPath('privacy.html')} target="_blank" rel="noreferrer">{welcomeLocale==='zh-TW'?'隱私說明':'Privacy'}</a><span>·</span><a href={publicPath('terms.html')} target="_blank" rel="noreferrer">{welcomeLocale==='zh-TW'?'使用條款':'Terms'}</a><span>·</span><a href={publicPath('copyright.html')} target="_blank" rel="noreferrer">{welcomeLocale==='zh-TW'?'版權聲明':'Copyright'}</a></div></div></div>;
   if(!loaded)return <div className="loading-screen"><img className="brand-logo" src={publicPath('logo-v108.svg')} alt=""/><p>Time Audit</p></div>;
@@ -226,7 +236,7 @@ function App(){
     <aside className={`sidebar ${mobileNav?'mobile-open':''}`}>
       <div className="sidebar-brand"><LogoStory locale={locale} src={publicPath('logo-v108.svg')} imageClassName="brand-logo"/><div><strong>Time Audit <small className="version-inline">V{APP_VERSION}版</small></strong><span>{t('tagline')}</span></div></div>
       <nav className="main-nav">{navItems.map(item=><button key={item.id} className={`nav-item ${page===item.id?'active':''}`} onClick={()=>openPage(item.id)}><item.icon size={19}/><span>{item.id==='today'?relativeDayLabel(parseDay(viewDay),locale):t(item.key)}</span>{page===item.id&&<span className="nav-indicator"/>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="sidebar-quote"><Sparkles size={18}/><p>{say('時間不是要被填滿，而是用來承載你重視的事。','Time is there to hold what matters, not merely to be filled.')}</p></div><div className="sidebar-profile"><div className="avatar">{profile.picture?<img src={profile.picture} alt=""/>:profile.name.charAt(0)}</div><div><b>{profile.name||'Time Audit'}</b><small>{profile.demo?t('preview'):profile.email}</small></div></div></div>
+      <div className="sidebar-bottom"><div className="sidebar-quote"><Sparkles size={18}/><p>{say('時間不是要被填滿，而是用來承載你重視的事。','Time is there to hold what matters, not merely to be filled.')}</p></div><div className="sidebar-account-wrap" ref={sidebarAccountMenu}><div className="sidebar-profile sidebar-profile-static"><div className="avatar">{profile.picture?<img src={profile.picture} alt=""/>:profile.name.charAt(0)}</div><div><b>{profile.name||'Time Audit'}</b><small>{profile.demo?t('preview'):profile.email}</small></div></div><button type="button" className="sidebar-profile sidebar-profile-button" aria-label={say('開啟帳號選單','Open account menu')} aria-haspopup="menu" aria-expanded={sidebarAccountOpen} onClick={()=>setSidebarAccountOpen(open=>!open)}><span className="avatar">{profile.picture?<img src={profile.picture} alt=""/>:profile.name.charAt(0)}</span><span className="sidebar-profile-name"><b>{profile.name||'Time Audit'}</b><small>{profile.demo?t('preview'):profile.email}</small></span><ChevronDown size={16} aria-hidden="true"/></button>{sidebarAccountOpen&&<div className="account-menu sidebar-account-menu" role="menu"><div className="account-menu-identity"><strong>{profile.name}</strong><small>{profile.demo?t('preview'):profile.email}</small></div><button type="button" role="menuitem" onClick={signOut}>{t('signOut')}</button></div>}</div></div>
       <div className="sidebar-resizer" role="separator" tabIndex={0} aria-orientation="vertical" aria-label={say('調整側欄寬度','Resize sidebar')} aria-valuenow={sidebarWidth} aria-valuemin={220} aria-valuemax={380} onPointerDown={startSidebarResize} onKeyDown={event=>{if(event.key==='ArrowRight')setSidebarWidth(v=>Math.min(380,v+12));if(event.key==='ArrowLeft')setSidebarWidth(v=>Math.max(220,v-12));}}/>
     </aside>
     <div className="main-wrap"><header className="topbar"><button className="mobile-menu icon-button" onClick={()=>setMobileNav(v=>!v)} aria-label="Menu"><Menu size={22}/></button><div className="breadcrumb">{page==='today'?relativeDayLabel(parseDay(viewDay),locale):t(navItems.find(n=>n.id===page)?.key??'today')}</div><div className="top-actions"><div className="language-switch" role="group" aria-label={t('language')}><button className={locale==='zh-TW'?'active':''} aria-pressed={locale==='zh-TW'} onClick={()=>changeLocale('zh-TW')}>繁中</button><button className={locale==='en'?'active':''} aria-pressed={locale==='en'} onClick={()=>changeLocale('en')}>EN</button></div>{!profile.demo&&<button className={`top-drive-button ${syncStatus}`} disabled={syncStatus==='syncing'} onClick={()=>{if(token)void doSync(token,audit);else void connectDrive();}} title={token?t('syncNow'):t('connectDrive')} aria-label={token?t('syncNow'):t('connectDrive')}><Cloud size={16}/><span>{syncStatus==='syncing'?t('syncing'):token?t('syncNowShort'):t('connectDriveShort')}</span></button>}<span className={`sync-pill ${syncStatus}`}>{profile.demo?<CloudOff size={14}/>:syncStatus==='synced'?<Cloud size={14}/>:<CloudOff size={14}/>} {profile.demo?t('preview'):t(syncStatus)}</span><button className="icon-button" title={say('開啟記錄提醒設定','Open reminder settings')} aria-label={say('開啟記錄提醒設定','Open reminder settings')} onClick={openReminderSettings}><Bell size={19}/></button><div className="account-menu-wrap" ref={accountMenu}><button type="button" className="top-avatar" aria-label={say('開啟帳號選單','Open account menu')} aria-haspopup="menu" aria-expanded={accountMenuOpen} onClick={()=>setAccountMenuOpen(open=>!open)}>{profile.picture?<img src={profile.picture} alt=""/>:profile.name.charAt(0)}</button>{accountMenuOpen&&<div className="account-menu" role="menu"><div className="account-menu-identity"><strong>{profile.name}</strong><small>{profile.demo?t('preview'):profile.email}</small></div><button type="button" role="menuitem" onClick={signOut}>{t('signOut')}</button></div>}</div></div></header>

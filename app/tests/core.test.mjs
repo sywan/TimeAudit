@@ -204,6 +204,7 @@ test('Drive sync keeps a phone questionnaire in its own file when desktop settin
   const remote={updatedAt:'2026-10-15T09:00:00.000Z',questionnaires:[result]};
   const previousFetch=globalThis.fetch;
   let uploaded=null,questionnaireUploaded=false;
+  const progress=[];
   globalThis.fetch=async (input,init={})=>{
     const url=new URL(String(input));
     if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
@@ -216,10 +217,15 @@ test('Drive sync keeps a phone questionnaire in its own file when desktop settin
     throw new Error(`Unexpected request: ${url}`);
   };
   try{
-    const synced=await syncWithDrive(local,'test-token');
+    const synced=await syncWithDrive(local,'test-token',update=>progress.push(update));
     assert.deepEqual(synced.state.questionnaires,[result]);
     assert.deepEqual(uploaded.questionnaires,[result]);
     assert.equal(questionnaireUploaded,true);
+    assert.equal(progress[0].stage,'discover');
+    assert.deepEqual(progress.filter(item=>item.stage==='download').at(-1),{stage:'download',completed:1,total:1});
+    const finalUpload=progress.filter(item=>item.stage==='upload').at(-1);
+    assert.equal(finalUpload.completed,finalUpload.total);
+    assert.ok(finalUpload.total>=2);
   }finally{globalThis.fetch=previousFetch;}
   assert.deepEqual(mergeQuestionnaires([result],[{...result,id:'desktop-ipip',completedAt:'2026-10-16T11:00:00.000Z'}]).map(q=>q.id),['desktop-ipip','phone-ipip']);
 });

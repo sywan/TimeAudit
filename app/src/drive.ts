@@ -66,6 +66,8 @@ async function listFiles(parent:string,token:string):Promise<DriveFile[]>{
 }
 
 export interface SyncConflict {local:Entry;remote:Entry;}
+export interface SyncProgress {stage:'authorization'|'discover'|'download'|'upload'|'sheet';completed:number;total:number;}
+export type SyncProgressReporter=(progress:SyncProgress)=>void;
 
 export function mergeQuestionnaires(local:QuestionnaireResult[],remote:QuestionnaireResult[]):QuestionnaireResult[]{
   const merged=new Map<string,QuestionnaireResult>();
@@ -91,33 +93,42 @@ export function mergeEntries(local:Entry[],remote:Entry[]):{entries:Entry[];conf
   return {entries:[...map.values()],conflicts};
 }
 
-export async function syncWithDrive(local:AuditState,token:string):Promise<{state:AuditState;conflicts:SyncConflict[];folderId:string}>{
+export async function syncWithDrive(local:AuditState,token:string,onProgress?:SyncProgressReporter):Promise<{state:AuditState;conflicts:SyncConflict[];folderId:string}>{
+  onProgress?.({stage:'discover',completed:0,total:0});
   const folderId=await createFolder(token);
   const files=await listFiles(folderId,token);
   const profileFile=files.find(f=>f.name==='profile.json');
-  const remoteProfile=profileFile?await getJson<Partial<AuditState>>(profileFile,token):null;
   const questionnaireFiles=files.filter(f=>/^questionnaire-.+\.json$/.test(f.name));
+  const journalFiles=files.filter(f=>/^journal-.+\.json$/.test(f.name));
+  const experimentFiles=files.filter(f=>/^experiment-.+\.json$/.test(f.name));
+  const feedbackFiles=files.filter(f=>/^insight-feedback-.+\.json$/.test(f.name));
+  const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
+  const readTotal=Number(Boolean(profileFile))+questionnaireFiles.length+journalFiles.length+experimentFiles.length+feedbackFiles.length+monthFiles.length;
+  let readDone=0;
+  onProgress?.({stage:'download',completed:0,total:readTotal});
+  const readJson=async<T>(file:DriveFile):Promise<T>=>{
+    const data=await getJson<T>(file,token);
+    onProgress?.({stage:'download',completed:++readDone,total:readTotal});
+    return data;
+  };
+  const remoteProfile=profileFile?await readJson<Partial<AuditState>>(profileFile):null;
   const remoteQuestionnaires=(await Promise.all(questionnaireFiles.map(async f=>{
-    const data=await getJson<{result:QuestionnaireResult}|QuestionnaireResult>(f,token);
+    const data=await readJson<{result:QuestionnaireResult}|QuestionnaireResult>(f);
     return 'result' in data?data.result:data;
   }))).filter(result=>result&&typeof result.id==='string');
-  const journalFiles=files.filter(f=>/^journal-.+\.json$/.test(f.name));
   const remoteJournals=(await Promise.all(journalFiles.map(async f=>{
-    const data=await getJson<{journal:DailyJournal}|DailyJournal>(f,token);
+    const data=await readJson<{journal:DailyJournal}|DailyJournal>(f);
     return 'journal' in data?data.journal:data;
   }))).filter(item=>item&&typeof item.id==='string');
-  const experimentFiles=files.filter(f=>/^experiment-.+\.json$/.test(f.name));
   const remoteExperiments=(await Promise.all(experimentFiles.map(async f=>{
-    const data=await getJson<{experiment:AuditState['experiments'][number]}|AuditState['experiments'][number]>(f,token);
+    const data=await readJson<{experiment:AuditState['experiments'][number]}|AuditState['experiments'][number]>(f);
     return 'experiment' in data?data.experiment:data;
   }))).filter(item=>item&&typeof item.id==='string');
-  const feedbackFiles=files.filter(f=>/^insight-feedback-.+\.json$/.test(f.name));
   const remoteFeedback=(await Promise.all(feedbackFiles.map(async f=>{
-    const data=await getJson<{feedback:NonNullable<AuditState['insightFeedback']>[number]}|NonNullable<AuditState['insightFeedback']>[number]>(f,token);
+    const data=await readJson<{feedback:NonNullable<AuditState['insightFeedback']>[number]}|NonNullable<AuditState['insightFeedback']>[number]>(f);
     return 'feedback' in data?data.feedback:data;
   }))).filter(item=>item&&typeof item.id==='string');
-  const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
-  const remoteEntries=(await Promise.all(monthFiles.map(f=>getJson<{entries:Entry[]}>(f,token)))).flatMap(x=>x.entries??[]);
+  const remoteEntries=(await Promise.all(monthFiles.map(f=>readJson<{entries:Entry[]}>(f)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
   const state:AuditState=withV09CategoryDefaults({
     ...initialState(),
@@ -139,35 +150,41 @@ export async function syncWithDrive(local:AuditState,token:string):Promise<{stat
   });
   // Each completed result has its own Drive file. A newer profile/settings write
   // cannot erase another device's questionnaire, including legacy profile data.
-  for(const result of state.questionnaires)await putJson(`questionnaire-${encodeURIComponent(result.id)}.json`,folderId,{schemaVersion:'0.2',result},token);
   const remoteJournalById=new Map(remoteJournals.map(item=>[item.id,item]));
-  for(const journal of state.journals??[]){
+  const pendingJournals=(state.journals??[]).filter(journal=>{
     const previous=remoteJournalById.get(journal.id);
-    if(previous?.updatedAt===journal.updatedAt&&previous.note===journal.note&&previous.mood===journal.mood)continue;
-    await putJson(`journal-${encodeURIComponent(journal.id)}.json`,folderId,{schemaVersion:'0.2',journal},token);
-  }
+    return !(previous?.updatedAt===journal.updatedAt&&previous.note===journal.note&&previous.mood===journal.mood);
+  });
   const remoteExperimentById=new Map(remoteExperiments.map(item=>[item.id,item]));
-  for(const experiment of state.experiments??[]){
+  const pendingExperiments=(state.experiments??[]).filter(experiment=>{
     const previous=remoteExperimentById.get(experiment.id);
-    if(previous&&JSON.stringify(previous)===JSON.stringify(experiment))continue;
-    await putJson(`experiment-${encodeURIComponent(experiment.id)}.json`,folderId,{schemaVersion:'0.2',experiment},token);
-  }
+    return !(previous&&JSON.stringify(previous)===JSON.stringify(experiment));
+  });
   const remoteFeedbackById=new Map(remoteFeedback.map(item=>[item.id,item]));
-  for(const feedback of state.insightFeedback??[]){
-    if(JSON.stringify(remoteFeedbackById.get(feedback.id))===JSON.stringify(feedback))continue;
-    await putJson(`insight-feedback-${encodeURIComponent(feedback.id)}.json`,folderId,{schemaVersion:'0.2',feedback},token);
-  }
-  if(conflicts.length)return {state,conflicts,folderId};
+  const pendingFeedback=(state.insightFeedback??[]).filter(feedback=>JSON.stringify(remoteFeedbackById.get(feedback.id))!==JSON.stringify(feedback));
   const grouped=new Map<string,Entry[]>();
-  for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
-  for(const [month,items] of grouped)await putJson(`entries-${month}.json`,folderId,{schemaVersion:'0.2',entries:items},token);
-  await putJson('profile.json',folderId,{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,insightFeedback:state.insightFeedback??[],customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt},token);
+  if(!conflicts.length)for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
+  const writeTotal=state.questionnaires.length+pendingJournals.length+pendingExperiments.length+pendingFeedback.length+(conflicts.length?0:grouped.size+1);
+  let writeDone=0;
+  onProgress?.({stage:'upload',completed:0,total:writeTotal});
+  const writeJson=async(name:string,data:unknown)=>{
+    await putJson(name,folderId,data,token);
+    onProgress?.({stage:'upload',completed:++writeDone,total:writeTotal});
+  };
+  for(const result of state.questionnaires)await writeJson(`questionnaire-${encodeURIComponent(result.id)}.json`,{schemaVersion:'0.2',result});
+  for(const journal of pendingJournals)await writeJson(`journal-${encodeURIComponent(journal.id)}.json`,{schemaVersion:'0.2',journal});
+  for(const experiment of pendingExperiments)await writeJson(`experiment-${encodeURIComponent(experiment.id)}.json`,{schemaVersion:'0.2',experiment});
+  for(const feedback of pendingFeedback)await writeJson(`insight-feedback-${encodeURIComponent(feedback.id)}.json`,{schemaVersion:'0.2',feedback});
+  if(conflicts.length)return {state,conflicts,folderId};
+  for(const [month,items] of grouped)await writeJson(`entries-${month}.json`,{schemaVersion:'0.2',entries:items});
+  await writeJson('profile.json',{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,insightFeedback:state.insightFeedback??[],customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt});
   return {state,conflicts,folderId};
 }
 
 const sheetCell=(value:string)=>/^[=+\-@]/.test(value)?`'${value}`:value;
 
-export async function updateSheetMirror(state:AuditState,token:string,folderId:string):Promise<string>{
+export async function updateSheetMirror(state:AuditState,token:string,folderId:string,onProgress?:SyncProgressReporter):Promise<string>{
+  onProgress?.({stage:'sheet',completed:0,total:0});
   let sheetId=state.preferences.sheetId;
   if(!sheetId){
     const sheet=await api<{spreadsheetId:string}>('https://sheets.googleapis.com/v4/spreadsheets',token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({properties:{title:'Time Audit · 活動紀錄',locale:state.preferences.locale,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},sheets:[{properties:{title:'Entries'}}]})});
@@ -182,9 +199,14 @@ export async function updateSheetMirror(state:AuditState,token:string,folderId:s
   for(const e of state.entries.filter(e=>!e.deletedAt)){
     rows.push([e.id,e.startAt,e.endAt,String(Math.max(0,Math.round((Date.parse(e.endAt)-Date.parse(e.startAt))/60000))),e.activityId,categoryOf(e.activityId,state.categoryOverrides),e.ratings.importance?.toString()??'',e.ratings.urgency?.toString()??'',e.ratings.valueAlignment?.toString()??'',e.feeling?.toString()??'',e.captureMode,sheetCell(e.customText)]);
   }
+  const total=1+Math.ceil(rows.length/500);
+  let completed=0;
+  onProgress?.({stage:'sheet',completed,total});
   await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A:L:clear`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  onProgress?.({stage:'sheet',completed:++completed,total});
   for(let start=0;start<rows.length;start+=500){
     await api(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Entries!A${start+1}:L${Math.min(start+500,rows.length)}?valueInputOption=RAW`,token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:rows.slice(start,start+500)})});
+    onProgress?.({stage:'sheet',completed:++completed,total});
   }
   return sheetId;
 }

@@ -1,6 +1,6 @@
 # Time Audit
 
-**目前開發版本：V1.06版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.07版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -15,6 +15,7 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 - Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.
 - Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
 - Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
+- Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CUNP (God/神 edition) or English NASB 2020.
 
 The [product specification](./TimeAudit-Specification.md) and [reviewable HTML version](./TimeAudit-Specification.html) are in the repository root.
 
@@ -42,6 +43,16 @@ The app publisher performs this setup once. End users only click the Google sign
 4. Copy `app/.env.example` to `app/.env.local` and set `VITE_GOOGLE_CLIENT_ID`. For deployment, provide that build variable in the hosting build environment and rebuild.
 
 The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests only `https://www.googleapis.com/auth/drive.file`. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use.
+
+## Optional YouVersion verse text setup
+
+The app runs without YouVersion credentials. Its Today card links to the selected day’s [official Verse of the Day](https://www.bible.com/verse-of-the-day). To display the text inside Time Audit:
+
+1. [Register an application with YouVersion Platform](https://platform.youversion.com/) and obtain an App Key. Request access to the **CUNP-神** (version 46) and **NASB2020** (version 2692) translations and accept any required publisher agreements.
+2. For local development, add `VITE_YOUVERSION_APP_KEY` to `app/.env.local`. For GitHub Pages, add a repository Actions variable with the same name **and** pass it to the `npm run build:pages` step in `.github/workflows/pages.yml` as `VITE_YOUVERSION_APP_KEY: ${{ vars.VITE_YOUVERSION_APP_KEY }}`. Then rerun **Publish Time Audit**. Browser build variables are visible to site visitors, so use only a key that YouVersion permits in a public web application; never enter a private server credential or publisher secret here.
+3. Verify the Today card in both languages and on two dates. If API access or a translation license is unavailable, the card keeps the YouVersion link instead of showing a different translation.
+
+The YouVersion API uses a **day-of-year** index rather than a year-specific date. The card uses the selected date’s day of year. It does not store scripture text in a user’s Google Drive or browser cache.
 
 ## Current limits
 

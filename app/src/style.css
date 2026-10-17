@@ -153,3 +153,27 @@
 .weekly-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.8rem}
 .weekly-actions button{border:1px solid #d4e3eb;background:#f7fafc;color:#416980;border-radius:.7rem;padding:.4rem .65rem;cursor:pointer}
 .weekly-actions button.selected{background:#dbeef8;border-color:#73accb;color:#235b79}
+
+/* V1.07: sync activity and selected-day scripture. */
+.sync-progress-banner{position:fixed;top:78px;right:24px;z-index:45;width:min(330px,calc(100vw - 30px));padding:12px 14px;background:#fffffff2;border:1px solid #cddfea;border-radius:12px;box-shadow:0 12px 32px #31597724;backdrop-filter:blur(10px)}
+.sync-progress-label{display:flex;justify-content:space-between;gap:12px;color:#486f88;font-size:.72rem;margin-bottom:9px}
+.sync-progress-label span{font-variant-numeric:tabular-nums;color:#7593a6}
+.sync-progress-track{height:7px;overflow:hidden;border-radius:9px;background:#e2edf3}
+.sync-progress-track i{display:block;height:100%;border-radius:9px;background:#6b9fbd;transition:width .18s ease}
+.sync-progress-track.indeterminate i{width:35%;animation:sync-slide 1.3s ease-in-out infinite}
+@keyframes sync-slide{from{transform:translateX(-110%)}to{transform:translateX(310%)}}
+.hero{gap:26px}
+.hero-intro{flex:1;min-width:0}
+.daily-verse{width:min(365px,42%);flex:0 0 min(365px,42%);min-width:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:11px;padding:20px 23px;background:#ffffffa9;border:1px solid #ffffffdb;border-radius:15px;box-shadow:0 12px 28px #6f9bb019}
+.daily-verse-heading{display:flex;align-items:center;gap:8px;color:#537f9b;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.daily-verse-mark{display:grid;place-items:center;width:23px;height:23px;background:#e3f1f7;border-radius:7px;color:#5b93b3}
+.daily-verse-text{font-size:.9rem!important;line-height:1.65!important;font-weight:600;color:#325970!important;margin:0!important;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.daily-verse-placeholder{font-weight:400!important;color:#68899c!important}
+.daily-verse-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;color:#718e9f;font-size:.63rem}
+.daily-verse-foot strong{color:#547b94}
+.daily-verse-foot a{color:#4f86a8;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:850px){.hero{flex-direction:column;align-items:stretch}.daily-verse{width:100%;flex-basis:auto}.daily-verse-text{-webkit-line-clamp:unset}}
+@media(max-width:760px){.sync-progress-banner{top:118px;right:12px}.hero{gap:20px}.daily-verse{padding:17px 19px}}
+@media(prefers-reduced-motion:reduce){.sync-progress-track.indeterminate i{animation:none;width:100%;opacity:.55}}
+
+.daily-verse-copyright{display:block;max-height:3.1em;overflow:auto;color:#849aa7;font-size:.53rem;line-height:1.45}

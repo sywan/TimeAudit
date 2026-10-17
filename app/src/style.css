@@ -200,3 +200,12 @@
 .hero-logo{display:block;width:69px;height:69px;flex:0 0 69px;border-radius:16px;box-shadow:0 12px 23px #416e8b2b}
 .hero-intro>p{max-width:560px}
 @media(max-width:760px){.hero-head{gap:12px}.hero-logo{width:55px;height:55px;flex-basis:55px;border-radius:13px}}
+
+.logo-story-trigger{display:inline-grid;place-items:center;flex:none;border:0;background:transparent;padding:0;border-radius:16px;line-height:0;cursor:pointer}
+.logo-story-trigger:hover img{filter:brightness(1.06)}
+.logo-story-trigger:focus-visible{outline:3px solid #78a9c7;outline-offset:4px}
+.logo-story-trigger .brand-logo.large{margin:0}
+.welcome-card>.logo-story-trigger{margin:0 auto 24px}
+.logo-story-popover{position:fixed;z-index:100;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:18px 20px;border:1px solid #c9dfe9;border-radius:14px;background:#fff;color:#3a5b70;box-shadow:0 14px 38px #22475d38;font-size:.82rem;line-height:1.75}
+.logo-story-popover strong{display:block;margin-bottom:9px;color:#24495f;font-size:.9rem;line-height:1.45}
+.logo-story-popover p{margin:0}

@@ -5,12 +5,12 @@ import type { Locale } from './i18n';
 const story = {
   'zh-TW': {
     title: 'Time Audit 從看見時間開始',
-    body: '我們把一天中原本容易悄悄流走的片段記錄下來，回頭看時間去了哪裡，再決定下一段時間要怎麼用。圓環代表持續的生活節奏，A 代表審視；那個小圓點提醒我們，改變可以從記錄眼前這一刻開始。',
+    body: '我們把一天中原本容易悄悄流走的片段記錄下來，回頭看時間去了哪裡，再決定下一段時間要怎麼用。圓環代表持續的生活節奏，A 代表審視；藍色橫槓代表一段段如實留下的記錄，一步一腳印地累積，拼出完整的一天。那個小圓點提醒我們，改變可以從記錄眼前這一刻開始。',
     label: '了解 Time Audit 標誌的故事',
   },
   en: {
     title: 'Time Audit begins by making time visible',
-    body: 'We record the moments that can quietly slip away during a day, look back at where our time went, and decide how to use the next stretch. The circle represents the ongoing rhythm of life; the A stands for Audit, a closer look at how we spend our time. The small dot reminds us that change can begin by recording this very moment.',
+    body: 'We record the moments that can quietly slip away during a day, look back at where our time went, and decide how to use the next stretch. The circle represents the ongoing rhythm of life; the A stands for Audit, a closer look at how we spend our time. The blue crossbar represents the stretches we record, one by one; together, those small steps reveal a whole day. The small dot reminds us that change can begin by recording this very moment.',
     label: 'Read the story behind the Time Audit logo',
   },
 } as const;
@@ -27,7 +27,7 @@ export default function LogoStory({ locale, src, imageClassName }: { locale: Loc
     const rect = trigger.current?.getBoundingClientRect();
     if (!rect) return;
     const width = Math.min(360, window.innerWidth - 24);
-    const height = locale === 'en' ? 245 : 205;
+    const height = locale === 'en' ? 315 : 270;
     setPosition({
       left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
       top: rect.bottom + height + 12 < window.innerHeight ? rect.bottom + 10 : Math.max(12, rect.top - height - 10),

@@ -1,6 +1,6 @@
 # Time Audit
 
-**目前開發版本：V1.10版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.11版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -57,7 +57,9 @@ The YouVersion API uses a **day-of-year** index rather than a year-specific date
 
 ## Optional website usage statistics
 
-GitHub Pages serves static files and does not store a server-side visitor counter. GitHub's **Insights → Traffic** counts visits to the *repository*, not usage of this web app. Time Audit therefore supports [Umami Cloud](https://umami.is/) as an optional, separate analytics service. This integration is inactive until the publisher completes the setup below.
+GitHub Pages serves static files and does not store a server-side visitor counter. GitHub's **Insights → Traffic** counts visits to the *repository*, not usage of this web app. Time Audit therefore supports [Umami Cloud](https://umami.is/) as an optional, separate analytics service. Tracking starts only when a Website ID is configured in the Pages build.
+
+For the current `sywan/TimeAudit` deployment, the Umami Website ID has been added as the `VITE_UMAMI_WEBSITE_ID` repository variable for V1.11. The published app can begin recording visits after the V1.11 Pages build succeeds. The `VITE_UMAMI_SHARE_URL` variable must contain a complete HTTPS `/share/…` link, not a Website ID; an invalid value is ignored by the app.
 
 1. Create an Umami Cloud account and add a website named **Time Audit** with domain `sywan.github.io`. Copy its **Website ID** from the tracking code; it is a public identifier, not an API key.
 2. In GitHub repository **Settings → Secrets and variables → Actions → Variables**, create `VITE_UMAMI_WEBSITE_ID` with that ID. Run **Actions → Publish Time Audit → Run workflow** (or push a new commit). The workflow passes this variable into the build.

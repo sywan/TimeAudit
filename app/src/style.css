@@ -212,3 +212,4 @@
 .logo-story-popover{position:fixed;z-index:100;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:18px 20px;border:1px solid #c9dfe9;border-radius:14px;background:#fff;color:#3a5b70;box-shadow:0 14px 38px #22475d38;font-size:.82rem;line-height:1.75}
 .logo-story-popover strong{display:block;margin-bottom:9px;color:#24495f;font-size:.9rem;line-height:1.45}
 .logo-story-popover p{margin:0}
+.site-usage-card{grid-column:1/-1}.usage-stats-frame{display:block;width:100%;min-height:460px;margin:12px 0;border:1px solid #dbe8ef;border-radius:10px;background:#f8fbfd}.settings-card details:has(.usage-stats-frame){margin:12px 0}.settings-card details:has(.usage-stats-frame) summary{cursor:pointer;color:#527a96;font-weight:700;font-size:.75rem}

@@ -29,6 +29,8 @@ jobs:
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_YOUVERSION_APP_KEY: ${{ vars.VITE_YOUVERSION_APP_KEY }}
+          VITE_UMAMI_WEBSITE_ID: ${{ vars.VITE_UMAMI_WEBSITE_ID }}
+          VITE_UMAMI_SHARE_URL: ${{ vars.VITE_UMAMI_SHARE_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

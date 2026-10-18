@@ -16,6 +16,7 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 - Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
 - Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
 - Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CCBT (當代譯本) or English NASB 2020. The Time Audit logo appears in the app, home screen icon, and browser tab.
+- Optional anonymous website usage analytics can count visits and four broad actions without reading anyone's time entries or journal.
 
 The [product specification](./TimeAudit-Specification.md) and [reviewable HTML version](./TimeAudit-Specification.html) are in the repository root.
 
@@ -53,6 +54,17 @@ The app runs without YouVersion credentials. Its Today card links to the selecte
 3. Verify the Today card in both languages and on two dates. If API access or a translation license is unavailable, the card keeps the YouVersion link instead of showing a different translation.
 
 The YouVersion API uses a **day-of-year** index rather than a year-specific date. The card uses the selected date’s day of year. It does not store scripture text in a user’s Google Drive or browser cache.
+
+## Optional website usage statistics
+
+GitHub Pages serves static files and does not store a server-side visitor counter. GitHub's **Insights → Traffic** counts visits to the *repository*, not usage of this web app. Time Audit therefore supports [Umami Cloud](https://umami.is/) as an optional, separate analytics service. This integration is inactive until the publisher completes the setup below.
+
+1. Create an Umami Cloud account and add a website named **Time Audit** with domain `sywan.github.io`. Copy its **Website ID** from the tracking code; it is a public identifier, not an API key.
+2. In GitHub repository **Settings → Secrets and variables → Actions → Variables**, create `VITE_UMAMI_WEBSITE_ID` with that ID. Run **Actions → Publish Time Audit → Run workflow** (or push a new commit). The workflow passes this variable into the build.
+3. Open the published app in a normal browser and inspect the Umami website dashboard for a page view. Your own visit will count during setup. Local development, other domains, Do Not Track, and users who disable anonymous statistics in Settings are excluded. Ad blockers can also prevent collection.
+4. To let visitors see aggregate statistics, create a **Share URL** for the website in Umami, selecting only the views you want public. Add that HTTPS `/share/…` link as a second Actions variable named `VITE_UMAMI_SHARE_URL` and rerun the workflow. Time Audit then shows **網站使用統計 / Site statistics** on the welcome page and in Settings. Leave this variable empty to keep the dashboard private in Umami.
+
+The dashboard can show page views, approximate unique visitors, and event counts for `entry_saved`, `journal_edited`, `insights_opened`, and `reflection_opened`. Journal edits are counted at most once per day per open app session to avoid counting every keystroke. These events have **no properties**: no Google ID, activity name, dates, ratings, or journal content. Umami's anonymous visitor and retention measures are approximate across browsers and devices; they cannot prove that an individual kept using Time Audit. The public statistics link opens Umami's read-only dashboard, while private detailed reports stay in the publisher's Umami account. Never put an Umami API key in `VITE_…` variables.
 
 ## Current limits
 

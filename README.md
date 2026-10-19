@@ -4,7 +4,7 @@
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
-[使用手冊 · User guide](https://sywan.github.io/TimeAudit/manual.html)（[繁體中文 Markdown](./app/public/USER-MANUAL.md) / [English Markdown](./app/public/USER-MANUAL.en.md)） · [高解析標誌 PNG](./app/public/time-audit-logo-4096.png)（4096 × 4096）
+[使用手冊 · User guide](https://sywan.github.io/TimeAudit/manual.html) · [下載離線 HTML 手冊](./app/public/Time-Audit-Manual-Offline.html) · [下載全部檔案 ZIP](./app/public/Time-Audit-Downloads.zip)（另含[繁體中文 Markdown](./app/public/USER-MANUAL.md)、[English Markdown](./app/public/USER-MANUAL.en.md)與[高解析標誌 PNG](./app/public/time-audit-logo-4096.png)）
 
 ## Current features
 

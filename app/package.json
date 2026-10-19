@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
-    "build:pages": "tsc --noEmit && vite build --base /TimeAudit/",
+    "build": "node scripts/build-manual-download.mjs && tsc --noEmit && vite build",
+    "build:pages": "node scripts/build-manual-download.mjs && tsc --noEmit && vite build --base /TimeAudit/",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

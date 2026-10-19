@@ -1,5 +1,6 @@
 // Local-only, explainable activity suggestions. Text is never sent to a model.
 const rules: Array<{id:string;terms:string[]}> = [
+  {id:'work.teaching',terms:['授課','授课','備課','备课','課程準備','课程准备','teaching','lesson prep','course preparation']},
   {id:'work.meeting',terms:['會議','開會','meeting','sync call']},
   {id:'work.writing',terms:['寫報告','寫提案','撰寫','報告','文件','proposal','report','draft']},
   {id:'work.messages',terms:['郵件','電郵','回訊','訊息','email','inbox','messages']},

@@ -34,5 +34,5 @@ const html = `<!doctype html>
 <html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css.replaceAll('</style', '<\\/style')}</style></head><body><div id="root"></div><script>window.__TA_OFFLINE_ASSETS__=${JSON.stringify(embedded)};</script><script>${js.replaceAll('</script', '<\\/script')}</script></body></html>`;
 const htmlPath = join(publicDir, 'Time-Audit-Manual-Offline.html');
 writeFileSync(htmlPath, html);
-execFileSync('zip', ['-q', '-j', '-X', '-o', join(publicDir, 'Time-Audit-Downloads.zip'), htmlPath, join(publicDir, 'time-audit-logo-4096.png'), join(publicDir, 'USER-MANUAL.md'), join(publicDir, 'USER-MANUAL.en.md')]);
+execFileSync('zip', ['-q', '-j', '-X', '-o', join(publicDir, 'Time-Audit-Downloads.zip'), htmlPath, join(publicDir, 'time-audit-logo-4096.png'), join(publicDir, 'QR-CODE_TimeAudit.png'), join(publicDir, 'USER-MANUAL.md'), join(publicDir, 'USER-MANUAL.en.md')]);
 console.log('Built offline React manual and download archive.');

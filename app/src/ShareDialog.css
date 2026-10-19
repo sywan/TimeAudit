@@ -1,0 +1,8 @@
+.share-dialog{width:min(520px,100%)}
+.share-body{padding:20px 26px 26px;overflow:auto;text-align:center}
+.share-body>p{color:#688397;line-height:1.7;font-size:.83rem;margin:0 auto 15px;max-width:410px}
+.share-qr{display:block;width:min(280px,76vw);height:auto;margin:0 auto 18px;border:1px solid #dbe7ef;border-radius:16px;background:#f3f9fc}
+.share-url-label{display:block;text-align:left;font-weight:700;color:#52748a;font-size:.72rem;margin:0 0 7px}
+.share-url{width:100%;border:1px solid #d4e3ec;background:#f8fbfd;border-radius:10px;padding:10px 12px;color:#3a637d;font-size:.83rem}
+.share-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:15px}
+@media(max-width:760px){.topbar .top-actions .share-button{display:inline-grid}.share-body{padding:16px}.share-qr{width:min(250px,65vw)}.share-actions{display:grid;grid-template-columns:1fr 1fr}.share-actions>*:first-child{grid-column:1/-1}}

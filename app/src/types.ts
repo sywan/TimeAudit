@@ -129,6 +129,9 @@ export function publicEquivalentForCustomName(name: string): string | null {
     '深入放鬆':'health.deepRelaxation', '深入放松':'health.deepRelaxation',
     '深度放鬆':'health.deepRelaxation', '深度放松':'health.deepRelaxation',
     '洗碗塊':'home.dishes', '洗碗筷':'home.dishes', '洗碗':'home.dishes',
+    '授課':'work.teaching', '授课':'work.teaching',
+    '課程準備':'work.teaching', '课程准备':'work.teaching',
+    '授課課程準備':'work.teaching', '授课课程准备':'work.teaching',
   };
   return equivalents[normalized]??null;
 }

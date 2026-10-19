@@ -30,7 +30,7 @@ const zh = {
   questionnaire:'可選量表', questionnaireInfo:'量表可以略過；未填就不計算相應分數。', ipip:'五因素人格量表（IPIP-50）', later:'即將加入正式題目與計分',
   language:'介面語言', account:'帳號', signOut:'登出', privacy:'資料放在你的 Google Drive；本機保留離線快取。',
   category_work:'工作', category_learning:'學習', category_home:'家務', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_faith:'信仰', category_travel:'交通', category_life:'生活', category_other:'其他',
-  activity_deep:'深度工作', activity_writing:'寫作／報告', activity_meeting:'會議', activity_messages:'回訊／郵件', activity_admin:'行政', activity_planning:'規劃',
+  activity_deep:'深度工作', activity_writing:'寫作／報告', activity_meeting:'會議', activity_messages:'回訊／郵件', activity_admin:'行政', activity_planning:'規劃', activity_teaching:'授課／課程準備',
   activity_reading:'閱讀', activity_course:'上課', activity_practice:'練習', activity_research:'研究', activity_programming:'撰寫程式',
   activity_cleaning:'清潔', activity_cooking:'煮飯', activity_shopping:'採買', activity_chores:'家務雜事', activity_dishes:'洗碗筷',
   activity_child:'照顧孩子', activity_elder:'照顧長者', activity_pet:'照顧寵物',
@@ -70,7 +70,7 @@ const en: Record<keyof typeof zh,string> = {
   questionnaire:'Optional questionnaires', questionnaireInfo:'You may skip questionnaires; missing answers do not receive scores.', ipip:'Five-factor inventory (IPIP-50)', later:'Official items and scoring coming next',
   language:'Language', account:'Account', signOut:'Sign out', privacy:'Data lives in your Google Drive; this device keeps an offline cache.',
   category_work:'Work', category_learning:'Learning', category_home:'Household', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_faith:'Faith', category_travel:'Travel', category_life:'Daily living', category_other:'Other',
-  activity_deep:'Deep work', activity_writing:'Writing / report', activity_meeting:'Meeting', activity_messages:'Messages / email', activity_admin:'Administration', activity_planning:'Planning',
+  activity_deep:'Deep work', activity_writing:'Writing / report', activity_meeting:'Meeting', activity_messages:'Messages / email', activity_admin:'Administration', activity_planning:'Planning', activity_teaching:'Teaching / course preparation',
   activity_reading:'Reading', activity_course:'Class', activity_practice:'Practice', activity_research:'Research', activity_programming:'Programming',
   activity_cleaning:'Cleaning', activity_cooking:'Cooking', activity_shopping:'Shopping', activity_chores:'Chores', activity_dishes:'Washing dishes',
   activity_child:'Childcare', activity_elder:'Eldercare', activity_pet:'Pet care',
@@ -86,7 +86,7 @@ export type TranslationKey = keyof typeof zh;
 export const translate = (locale: Locale, key: TranslationKey) => (locale === 'en' ? en[key] : zh[key]);
 
 export const categories: Array<{id:string; key: TranslationKey; color:string; activities: Array<{id:string;key:TranslationKey}>}> = [
-  {id:'work',key:'category_work',color:'#517b9b',activities:[{id:'work.deep',key:'activity_deep'},{id:'work.writing',key:'activity_writing'},{id:'work.meeting',key:'activity_meeting'},{id:'work.messages',key:'activity_messages'},{id:'work.admin',key:'activity_admin'},{id:'work.planning',key:'activity_planning'}]},
+  {id:'work',key:'category_work',color:'#517b9b',activities:[{id:'work.deep',key:'activity_deep'},{id:'work.writing',key:'activity_writing'},{id:'work.meeting',key:'activity_meeting'},{id:'work.messages',key:'activity_messages'},{id:'work.admin',key:'activity_admin'},{id:'work.planning',key:'activity_planning'},{id:'work.teaching',key:'activity_teaching'}]},
   {id:'learning',key:'category_learning',color:'#7180a3',activities:[{id:'learning.reading',key:'activity_reading'},{id:'learning.course',key:'activity_course'},{id:'learning.practice',key:'activity_practice'},{id:'learning.research',key:'activity_research'},{id:'learning.programming',key:'activity_programming'}]},
   {id:'home',key:'category_home',color:'#a0878a',activities:[{id:'home.cleaning',key:'activity_cleaning'},{id:'home.cooking',key:'activity_cooking'},{id:'home.shopping',key:'activity_shopping'},{id:'home.chores',key:'activity_chores'},{id:'home.dishes',key:'activity_dishes'}]},
   {id:'care',key:'category_care',color:'#b28a7b',activities:[{id:'care.child',key:'activity_child'},{id:'care.elder',key:'activity_elder'},{id:'care.pet',key:'activity_pet'}]},

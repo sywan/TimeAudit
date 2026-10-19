@@ -229,6 +229,25 @@ test('deep relaxation is a health activity and an existing personal ID moves the
   assert.ok(categories.find(c=>c.id==='home').activities.some(a=>a.id==='home.dishes'));
 });
 
+test('v1.15 puts existing personal teaching records in Work without changing their IDs', () => {
+  const state=initialState();
+  state.customActivities=[{id:'custom.teacher-owned',name:'授課',createdAt:'2026-10-19T00:00:00.000Z'}];
+  state.categoryOverrides={'custom.teacher-owned':'other'};
+  state.entries=[{id:'entry-teaching',activityId:'custom.teacher-owned',startAt:'2026-10-19T01:00:00.000Z',endAt:'2026-10-19T02:30:00.000Z'}];
+  const migrated=withV09CategoryDefaults(state);
+  assert.equal(categoryOf('custom.teacher-owned',migrated.categoryOverrides),'work');
+  assert.deepEqual(migrated.entries,state.entries);
+  assert.equal(durationMinutes(migrated.entries[0]),90);
+  assert.equal(activityLabel('zh-TW','work.teaching'),'授課／課程準備');
+  assert.equal(activityLabel('en','work.teaching'),'Teaching / course preparation');
+  assert.ok(categories.find(c=>c.id==='work').activities.some(a=>a.id==='work.teaching'));
+  assert.strictEqual(withV09CategoryDefaults(migrated),migrated);
+  const manual=initialState();
+  manual.customActivities=state.customActivities;
+  manual.categoryOverrides={'custom.teacher-owned':'learning'};
+  assert.equal(categoryOf('custom.teacher-owned',withV09CategoryDefaults(manual).categoryOverrides),'learning');
+});
+
 test('update check reads the published content-hashed bundle, not the product version', () => {
   assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/index-Ab12cd.js"></script>'),'/TimeAudit/assets/index-Ab12cd.js');
   assert.equal(publishedBundlePath('<script type="module" src="/src/main.tsx"></script>'),null);

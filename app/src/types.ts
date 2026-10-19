@@ -141,14 +141,26 @@ export function publicEquivalentForCustomName(name: string): string | null {
 export function withV09CategoryDefaults(state: AuditState): AuditState {
   const overrides = {...(state.categoryOverrides??{})};
   let changed = false;
-  for (const activity of state.customActivities??[]) {
+  // Remove the unused personal "授課" duplicate only after records have moved
+  // to the built-in activity. Keep its ID if any live entry still refers to it.
+  const active = activeEntries(state.entries);
+  const hasTeachingEntry = active.some(entry=>entry.activityId==='work.teaching');
+  const referencedIds = new Set(active.map(entry=>entry.activityId));
+  const customActivities = (state.customActivities??[]).filter(activity=>{
+    const legacyTeaching = /^(授課|授课)$/.test(activity.name.normalize('NFKC').replace(/\s/g,''));
+    if (!legacyTeaching || !hasTeachingEntry || referencedIds.has(activity.id)) return true;
+    delete overrides[activity.id];
+    changed = true;
+    return false;
+  });
+  for (const activity of customActivities) {
     const equivalent = publicEquivalentForCustomName(activity.name);
     if (equivalent && (!Object.hasOwn(overrides,activity.id) || overrides[activity.id] === 'other')) {
       overrides[activity.id] = categoryOf(equivalent);
       changed = true;
     }
   }
-  return changed ? {...state,categoryOverrides:overrides} : state;
+  return changed ? {...state,customActivities,categoryOverrides:overrides} : state;
 }
 
 export function getGaps(entries: Entry[], start: number, end: number): Array<[number, number]> {

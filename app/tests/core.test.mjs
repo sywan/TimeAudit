@@ -248,6 +248,19 @@ test('v1.15 puts existing personal teaching records in Work without changing the
   assert.equal(categoryOf('custom.teacher-owned',withV09CategoryDefaults(manual).categoryOverrides),'learning');
 });
 
+test('unused old teaching activity disappears only after its records move', () => {
+  const state=initialState();
+  state.customActivities=[{id:'custom.old-teaching',name:'授課',createdAt:'2026-10-19T00:00:00Z'}];
+  state.categoryOverrides={'custom.old-teaching':'work'};
+  state.entries=[{id:'moved',activityId:'work.teaching',startAt:'2026-10-19T08:00:00Z',endAt:'2026-10-19T09:00:00Z',deletedAt:null}];
+  const cleaned=withV09CategoryDefaults(state);
+  assert.deepEqual(cleaned.customActivities,[]);
+  assert.deepEqual(cleaned.categoryOverrides,{});
+  const stillReferenced={...state,entries:[...state.entries,{id:'not-yet-moved',activityId:'custom.old-teaching',startAt:'2026-10-19T10:00:00Z',endAt:'2026-10-19T11:00:00Z',deletedAt:null}]};
+  assert.equal(withV09CategoryDefaults(stillReferenced).customActivities?.length,1);
+  assert.equal(withV09CategoryDefaults({...state,entries:[]}).customActivities?.length,1);
+});
+
 test('update check reads the published content-hashed bundle, not the product version', () => {
   assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/index-Ab12cd.js"></script>'),'/TimeAudit/assets/index-Ab12cd.js');
   assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/app-Ch4iS1iH.js"></script>'),'/TimeAudit/assets/app-Ch4iS1iH.js');

@@ -11,6 +11,53 @@ import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
 import {dataQuality,weeklyRhythm,weeklyRhythmComposition,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
 import {mergeExperiments} from '../src/experiments.ts';
 import {mergeInsightFeedback} from '../src/insightFeedback.ts';
+import {activeCompassItems,mergeCompassItems} from '../src/compass.ts';
+
+test('values and goals merge by item ID; an empty newer profile cannot erase them',()=>{
+  const phone={id:'phone-value',text:'信仰',updatedAt:'2026-10-19T01:00:00Z'};
+  const desktop={id:'desktop-value',text:'健康',updatedAt:'2026-10-19T02:00:00Z'};
+  assert.deepEqual(mergeCompassItems([], [phone], [desktop]),[phone,desktop]);
+  const removed={...phone,deletedAt:'2026-10-19T03:00:00Z',updatedAt:'2026-10-19T03:00:00Z'};
+  assert.deepEqual(activeCompassItems(mergeCompassItems([phone],[removed],[phone])),[]);
+});
+
+test('Drive sync restores independent values and goals despite a newer empty profile',async()=>{
+  const local=initialState();
+  local.updatedAt='2026-10-19T02:00:00Z';
+  local.values=[{id:'local-value',text:'家庭',updatedAt:'2026-10-19T01:00:00Z'}];
+  const remoteValue={id:'remote-value',text:'信仰',updatedAt:'2026-10-19T00:00:00Z'};
+  const remoteGoal={id:'remote-goal',text:'每天閱讀',updatedAt:'2026-10-19T00:00:00Z'};
+  const files=[{id:'profile-id',name:'profile.json'},{id:'value-id',name:'compass-value-remote-value.json'},{id:'goal-id',name:'compass-goal-remote-goal.json'}];
+  const created=[];
+  let savedProfile=null;
+  const previousFetch=globalThis.fetch;
+  globalThis.fetch=async(input,init={})=>{
+    const url=new URL(String(input));
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.get('q')?.includes("name = 'Time Audit'"))return Response.json({files:[{id:'folder-id',name:'Time Audit'}]});
+    if(url.pathname==='/drive/v3/files'&&url.searchParams.has('q')){
+      const name=url.searchParams.get('q')?.match(/name = '([^']+)'/)?.[1];
+      return Response.json({files:name?files.filter(file=>file.name===name):files});
+    }
+    if(url.pathname==='/drive/v3/files/profile-id')return Response.json({updatedAt:'2026-10-19T03:00:00Z',values:[],goals:[]});
+    if(url.pathname==='/drive/v3/files/value-id')return Response.json({item:remoteValue});
+    if(url.pathname==='/drive/v3/files/goal-id')return Response.json({item:remoteGoal});
+    if(url.pathname==='/upload/drive/v3/files'&&init.method==='POST'){
+      created.push(String(init.body));return Response.json({id:'created-id'});
+    }
+    if(url.pathname==='/upload/drive/v3/files/profile-id'&&init.method==='PATCH'){
+      savedProfile=JSON.parse(init.body);return Response.json({});
+    }
+    if(url.pathname.startsWith('/upload/drive/v3/files/')&&init.method==='PATCH')return Response.json({});
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  try{
+    const result=await syncWithDrive(local,'test-token');
+    assert.deepEqual(result.state.values.map(item=>item.id),['local-value','remote-value']);
+    assert.deepEqual(result.state.goals.map(item=>item.id),['remote-goal']);
+    assert.deepEqual(savedProfile.values.map(item=>item.id),['local-value','remote-value']);
+    assert.ok(created.some(body=>body.includes('compass-value-local-value.json')));
+  }finally{globalThis.fetch=previousFetch;}
+});
 
 test('work outside a personal time window counts actual union minutes and distinct days',()=>{
   const state=initialState();

@@ -15,8 +15,10 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 - Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.
 - Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
 - Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
+- Install from iPhone Safari's Share → Add to Home Screen, or from Chrome/Edge's address bar or menu. The app does not show a duplicate install button when the browser controls installation.
 - Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CCBT (當代譯本) or English NASB 2020. The Time Audit logo appears in the app, home screen icon, and browser tab.
 - Optional anonymous website usage analytics can count visits and four broad actions without reading anyone's time entries or journal.
+- Values and goals sync as individual Drive files by stable ID. Deletions carry a timestamp, while `profile.json` remains a backup; a newer copy of unrelated settings cannot erase the list. Local IndexedDB saves are serialized to prevent an older snapshot from finishing last.
 
 The [product specification](./TimeAudit-Specification.md) and [reviewable HTML version](./TimeAudit-Specification.html) are in the repository root.
 

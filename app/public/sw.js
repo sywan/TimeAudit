@@ -1,4 +1,4 @@
-const CACHE = 'time-audit-shell-v112-logo-story';
+const CACHE = 'time-audit-shell-v112-data-safety';
 const root = self.registration.scope;
 const shell = [new URL('manifest.webmanifest', root).href, new URL('logo-v108.svg', root).href, new URL('icon-192.png', root).href, new URL('icon-512.png', root).href, new URL('apple-touch-icon.png', root).href, new URL('copyright.html', root).href];
 self.addEventListener('install', event => {

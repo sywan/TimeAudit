@@ -1,5 +1,6 @@
-import type { AuditState, DailyJournal, Entry, QuestionnaireResult } from './types.ts';
+import type { AuditState, CompassItem, DailyJournal, Entry, QuestionnaireResult } from './types.ts';
 import { categoryOf, initialState, withV09CategoryDefaults } from './types.ts';
+import { mergeCompassItems } from './compass.ts';
 import {mergeJournalVersions} from './journal.ts';
 import {mergeExperiments} from './experiments.ts';
 import {mergeInsightFeedback} from './insightFeedback.ts';
@@ -98,12 +99,14 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
   const folderId=await createFolder(token);
   const files=await listFiles(folderId,token);
   const profileFile=files.find(f=>f.name==='profile.json');
+  const valueFiles=files.filter(f=>/^compass-value-.+\.json$/.test(f.name));
+  const goalFiles=files.filter(f=>/^compass-goal-.+\.json$/.test(f.name));
   const questionnaireFiles=files.filter(f=>/^questionnaire-.+\.json$/.test(f.name));
   const journalFiles=files.filter(f=>/^journal-.+\.json$/.test(f.name));
   const experimentFiles=files.filter(f=>/^experiment-.+\.json$/.test(f.name));
   const feedbackFiles=files.filter(f=>/^insight-feedback-.+\.json$/.test(f.name));
   const monthFiles=files.filter(f=>/^entries-\d{4}-\d{2}\.json$/.test(f.name));
-  const readTotal=Number(Boolean(profileFile))+questionnaireFiles.length+journalFiles.length+experimentFiles.length+feedbackFiles.length+monthFiles.length;
+  const readTotal=Number(Boolean(profileFile))+valueFiles.length+goalFiles.length+questionnaireFiles.length+journalFiles.length+experimentFiles.length+feedbackFiles.length+monthFiles.length;
   let readDone=0;
   onProgress?.({stage:'download',completed:0,total:readTotal});
   const readJson=async<T>(file:DriveFile):Promise<T>=>{
@@ -112,6 +115,13 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
     return data;
   };
   const remoteProfile=profileFile?await readJson<Partial<AuditState>>(profileFile):null;
+  const readCompass=async(file:DriveFile):Promise<CompassItem|null>=>{
+    const data=await readJson<{item:CompassItem}|CompassItem>(file);
+    const item='item' in data?data.item:data;
+    return item&&typeof item.id==='string'&&typeof item.text==='string'?item:null;
+  };
+  const remoteValues=(await Promise.all(valueFiles.map(readCompass))).filter((item):item is CompassItem=>item!==null);
+  const remoteGoals=(await Promise.all(goalFiles.map(readCompass))).filter((item):item is CompassItem=>item!==null);
   const remoteQuestionnaires=(await Promise.all(questionnaireFiles.map(async f=>{
     const data=await readJson<{result:QuestionnaireResult}|QuestionnaireResult>(f);
     return 'result' in data?data.result:data;
@@ -130,17 +140,23 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
   }))).filter(item=>item&&typeof item.id==='string');
   const remoteEntries=(await Promise.all(monthFiles.map(f=>readJson<{entries:Entry[]}>(f)))).flatMap(x=>x.entries??[]);
   const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
+  const remoteProfileIsNewer=Boolean(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt);
   const state:AuditState=withV09CategoryDefaults({
     ...initialState(),
     ...local,
-    ...(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt ? {
-      values:remoteProfile.values??local.values,goals:remoteProfile.goals??local.goals,
+    ...(remoteProfileIsNewer && remoteProfile ? {
       preferences:{...local.preferences,...remoteProfile.preferences},
       experiments:mergeExperiments(local.experiments??[],remoteProfile.experiments??[]),
       customActivities:remoteProfile.customActivities??local.customActivities,
-      categoryOverrides:remoteProfile.categoryOverrides??local.categoryOverrides,
       updatedAt:remoteProfile.updatedAt??local.updatedAt,
     }:{}),
+    // A profile's updatedAt also changes for unrelated preferences. Never use
+    // it to choose an entire value/goal list over another device's list.
+    values:mergeCompassItems(remoteProfile?.values??[],local.values??[],remoteValues),
+    goals:mergeCompassItems(remoteProfile?.goals??[],local.goals??[],remoteGoals),
+    categoryOverrides:remoteProfileIsNewer
+      ? {...(local.categoryOverrides??{}),...(remoteProfile?.categoryOverrides??{})}
+      : {...(remoteProfile?.categoryOverrides??{}),...(local.categoryOverrides??{})},
     customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
     questionnaires:mergeQuestionnaires(mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),remoteQuestionnaires),
     journals:mergeJournalVersions(local.journals??[],remoteProfile?.journals??[],remoteJournals),
@@ -162,15 +178,21 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
   });
   const remoteFeedbackById=new Map(remoteFeedback.map(item=>[item.id,item]));
   const pendingFeedback=(state.insightFeedback??[]).filter(feedback=>JSON.stringify(remoteFeedbackById.get(feedback.id))!==JSON.stringify(feedback));
+  const remoteValueById=new Map(remoteValues.map(item=>[item.id,item]));
+  const pendingValues=state.values.filter(item=>JSON.stringify(remoteValueById.get(item.id))!==JSON.stringify(item));
+  const remoteGoalById=new Map(remoteGoals.map(item=>[item.id,item]));
+  const pendingGoals=state.goals.filter(item=>JSON.stringify(remoteGoalById.get(item.id))!==JSON.stringify(item));
   const grouped=new Map<string,Entry[]>();
   if(!conflicts.length)for(const entry of entries){const month=entry.startAt.slice(0,7);grouped.set(month,[...(grouped.get(month)??[]),entry]);}
-  const writeTotal=state.questionnaires.length+pendingJournals.length+pendingExperiments.length+pendingFeedback.length+(conflicts.length?0:grouped.size+1);
+  const writeTotal=pendingValues.length+pendingGoals.length+state.questionnaires.length+pendingJournals.length+pendingExperiments.length+pendingFeedback.length+(conflicts.length?0:grouped.size+1);
   let writeDone=0;
   onProgress?.({stage:'upload',completed:0,total:writeTotal});
   const writeJson=async(name:string,data:unknown)=>{
     await putJson(name,folderId,data,token);
     onProgress?.({stage:'upload',completed:++writeDone,total:writeTotal});
   };
+  for(const item of pendingValues)await writeJson(`compass-value-${encodeURIComponent(item.id)}.json`,{schemaVersion:'0.2',item});
+  for(const item of pendingGoals)await writeJson(`compass-goal-${encodeURIComponent(item.id)}.json`,{schemaVersion:'0.2',item});
   for(const result of state.questionnaires)await writeJson(`questionnaire-${encodeURIComponent(result.id)}.json`,{schemaVersion:'0.2',result});
   for(const journal of pendingJournals)await writeJson(`journal-${encodeURIComponent(journal.id)}.json`,{schemaVersion:'0.2',journal});
   for(const experiment of pendingExperiments)await writeJson(`experiment-${encodeURIComponent(experiment.id)}.json`,{schemaVersion:'0.2',experiment});

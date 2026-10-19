@@ -4,6 +4,7 @@ import {categoryOf, getGaps, overlapMinutes, type AuditState, type Entry, type R
 import {categories, categoryMeta, translate, type Locale} from './i18n.ts';
 import {insightWindow, type InsightRange} from './insightRange.ts';
 import {dataQuality,feelingByCategory,moodAssociations,weeklyRhythm,weeklyRhythmComposition,workOutsideHours} from './auditAnalytics.ts';
+import {activeCompassItems} from './compass.ts';
 
 type Section='allocation'|'ratings'|'decisions'|'goals';
 const ratingKeys:RatingKey[]=['importance','urgency','valueAlignment'];
@@ -56,14 +57,16 @@ export default function InsightsPage({audit,entries,locale,goCalendar,mutate}:{a
     {id:'less-urgent',zh:'較不重要但急迫',en:'Less important, urgent',test:(e:Entry)=>(e.ratings.importance??8)<=3&&(e.ratings.urgency??0)>=5},
     {id:'less-calm',zh:'較不重要且不急',en:'Less important, not urgent',test:(e:Entry)=>(e.ratings.importance??8)<=3&&(e.ratings.urgency??8)<=3},
   ].map(item=>({...item,minutes:included.filter(item.test).reduce((sum,e)=>sum+overlapMinutes(e,start,end),0)}));
-  const goalTimes=audit.goals.map(goal=>({goal,minutes:included.filter(e=>e.goalIds.includes(goal.id)).reduce((sum,e)=>sum+overlapMinutes(e,start,end),0)}));
+  const goals=activeCompassItems(audit.goals);
+  const values=activeCompassItems(audit.values);
+  const goalTimes=goals.map(goal=>({goal,minutes:included.filter(e=>e.goalIds.includes(goal.id)).reduce((sum,e)=>sum+overlapMinutes(e,start,end),0)}));
   const ratingData=ratingKeys.map(key=>{
     const buckets=Array.from({length:7},(_,index)=>included.reduce((sum,e)=>sum+(e.ratings[key]===index+1?overlapMinutes(e,start,end):0),0));
     return {key,buckets,rated:buckets.reduce((a,b)=>a+b,0),high:buckets.slice(4).reduce((a,b)=>a+b,0)};
   });
   const classified=quadrants.reduce((sum,q)=>sum+q.minutes,0);
-  const faithValue=audit.values.find(value=>/信仰|神|靈修|禱告|faith|spiritual|prayer|god/i.test(value.text));
-  const linkedValues=audit.values.map(value=>({value,minutes:included.filter(e=>e.valueIds.includes(value.id)).reduce((sum,e)=>sum+overlapMinutes(e,start,end),0)})).sort((a,b)=>b.minutes-a.minutes);
+  const faithValue=values.find(value=>/信仰|神|靈修|禱告|faith|spiritual|prayer|god/i.test(value.text));
+  const linkedValues=values.map(value=>({value,minutes:included.filter(e=>e.valueIds.includes(value.id)).reduce((sum,e)=>sum+overlapMinutes(e,start,end),0)})).sort((a,b)=>b.minutes-a.minutes);
   const notes:Record<Section,string[]>={allocation:[],ratings:[],decisions:[],goals:[]};
   if(!total)notes.allocation.push(locale==='zh-TW'?'這段期間還沒有活動紀錄；先記錄或補登，才能比較時間流向。':'There are no activity entries in this period yet. Record or backfill time before comparing categories.');
   else{
@@ -72,7 +75,7 @@ export default function InsightsPage({audit,entries,locale,goCalendar,mutate}:{a
     if(faithValue){const faithMinutes=totalsMap.get('faith')??0;notes.allocation.push(locale==='zh-TW'?`你列出的價值「${faithValue.text}」可與信仰活動對照：這段期間記錄了 ${duration(faithMinutes,locale)}，占已記錄活動 ${share(faithMinutes,total)}%。時間比重不能單獨判定是否足夠；可再對照你希望的頻率與實際感受。`:`Your value “${faithValue.text}” can be compared with Faith activities: ${duration(faithMinutes,locale)}, ${share(faithMinutes,total)}% of recorded activity time. Time alone cannot say whether it is enough; compare it with your desired rhythm and experience.`);}
     const linked=linkedValues.find(item=>item.minutes>0);
     if(linked)notes.allocation.push(locale==='zh-TW'?`你明確關聯到價值「${linked.value.text}」的紀錄共有 ${duration(linked.minutes,locale)}；沒有關聯的活動仍可能有價值。`:`Entries explicitly linked to “${linked.value.text}” total ${duration(linked.minutes,locale)}. Unlinked activities may still matter.`);
-    else if(audit.values.length)notes.allocation.push(locale==='zh-TW'?'你已設定個人價值，但尚未把這段期間的紀錄關聯到價值；目前只能依活動分類觀察，不能推定你的價值是否實現。':'You have personal values, but no entries in this period are linked to them. Categories alone cannot establish whether those values were fulfilled.');
+    else if(values.length)notes.allocation.push(locale==='zh-TW'?'你已設定個人價值，但尚未把這段期間的紀錄關聯到價值；目前只能依活動分類觀察，不能推定你的價值是否實現。':'You have personal values, but no entries in this period are linked to them. Categories alone cannot establish whether those values were fulfilled.');
   }
   if(coverage<80)notes.allocation.push(locale==='zh-TW'?`這段期間已過時間的覆蓋率為 ${coverageLabel}；未記錄的時間可能改變排序與比重。`:`Coverage of elapsed time is ${coverageLabel}; unrecorded time could change the ranking and shares.`);
   for(const item of ratingData){

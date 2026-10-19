@@ -21,7 +21,7 @@ export interface Entry {
   deletedAt: string | null;
 }
 
-export interface CompassItem { id: string; text: string; }
+export interface CompassItem { id: string; text: string; updatedAt?: string; deletedAt?: string; }
 export interface CustomActivity { id: string; name: string; createdAt: string; }
 
 export interface Preferences {

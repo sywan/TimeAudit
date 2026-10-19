@@ -250,6 +250,8 @@ test('v1.15 puts existing personal teaching records in Work without changing the
 
 test('update check reads the published content-hashed bundle, not the product version', () => {
   assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/index-Ab12cd.js"></script>'),'/TimeAudit/assets/index-Ab12cd.js');
+  assert.equal(publishedBundlePath('<script type="module" crossorigin src="/TimeAudit/assets/app-Ch4iS1iH.js"></script>'),'/TimeAudit/assets/app-Ch4iS1iH.js');
+  assert.equal(publishedBundlePath('<script src="/TimeAudit/assets/app-Ch4iS1iH.js" type="module"></script>'),'/TimeAudit/assets/app-Ch4iS1iH.js');
   assert.equal(publishedBundlePath('<script type="module" src="/src/main.tsx"></script>'),null);
   assert.deepEqual(publishedAssetPaths('<link rel="stylesheet" href="/TimeAudit/assets/index-Style.css"><script type="module" src="/TimeAudit/assets/index-Code.js"></script>'),['/TimeAudit/assets/index-Style.css','/TimeAudit/assets/index-Code.js']);
 });

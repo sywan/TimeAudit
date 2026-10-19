@@ -1,8 +1,13 @@
 // Vite gives every production JavaScript bundle a content-specific filename.
 // Compare that filename, since a small site update may keep the same product version.
 export function publishedBundlePath(html: string): string | null {
-  const match = html.match(/<script\b[^>]*\bsrc=["']([^"']*\/assets\/index-[^"']+\.js)["'][^>]*>/i);
-  return match?.[1] ?? null;
+  // Vite names the entry after its Rollup input (currently "app"), not always "index".
+  for (const [tag] of html.matchAll(/<script\b[^>]*>/gi)) {
+    if (!/\btype=["']module["']/i.test(tag)) continue;
+    const source = tag.match(/\bsrc=["']([^"']*\/assets\/[^"']+-[A-Za-z0-9_-]+\.js)["']/i)?.[1];
+    if (source) return source;
+  }
+  return null;
 }
 
 export function publishedAssetPaths(html: string): string[] {

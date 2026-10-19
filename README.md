@@ -4,6 +4,8 @@
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
+[使用手冊 · User guide](https://sywan.github.io/TimeAudit/manual.html)（[繁體中文 Markdown](./app/public/USER-MANUAL.md) / [English Markdown](./app/public/USER-MANUAL.en.md)） · [高解析標誌 PNG](./app/public/time-audit-logo-4096.png)（4096 × 4096）
+
 ## Current features
 
 - Editable start and end times, 5-minute adjustment buttons, activity chips, custom descriptions, three optional 1–7 ratings, and an optional 1–7 activity feeling rating.

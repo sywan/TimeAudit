@@ -1,5 +1,11 @@
 // Local-only, explainable activity suggestions. Text is never sent to a model.
 const rules: Array<{id:string;terms:string[]}> = [
+  {id:'finance.investing',terms:['看盤','看盘','股票','股市','基金','證券','证券','投資','投资','stock market','investing','portfolio']},
+  {id:'finance.banking',terms:['銀行','银行','郵局','邮局','存款','定存','轉帳','转账','banking','deposit']},
+  {id:'finance.exchange',terms:['換匯','换汇','外幣','外币','匯率','汇率','美元','美金','currency exchange','foreign exchange']},
+  {id:'finance.insuranceTax',terms:['保險','保险','報稅','报税','稅務','税务','insurance','tax filing']},
+  {id:'finance.planning',terms:['記帳','记账','預算','预算','收支','財務規劃','财务规划','budgeting','bookkeeping']},
+  {id:'finance.general',terms:['理財','理财','personal finance']},
   {id:'work.teaching',terms:['授課','授课','備課','备课','課程準備','课程准备','teaching','lesson prep','course preparation']},
   {id:'learning.researchMeeting',terms:['研究會議','研究会议','研究生開會','研究生开会','學生研究討論','学生研究讨论','research meeting','lab meeting','meeting with graduate students']},
   {id:'work.meeting',terms:['工作會議','工作会议','職場會議','职场会议','會議','開會','meeting','sync call']},

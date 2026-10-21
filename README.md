@@ -1,6 +1,8 @@
 # Time Audit
 
-**目前開發版本：V1.20.1版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.21版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+
+V1.21 新增「理財」分類：綜合理財、財務規劃／記帳、銀行／郵局業務、投資／看盤、換匯／外幣管理、保險／稅務。既有自訂「理財」活動保留原 ID 與紀錄，並由「其他」歸入理財；使用者自行指定的其他分類維持不變。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -48,7 +50,7 @@ The app publisher performs this setup once. End users only click the Google sign
 3. Create an **OAuth 2.0 Web application** client. Add the local and deployed site origins under Authorized JavaScript origins, for example `http://127.0.0.1:5173` and the final `https://…` site origin.
 4. Copy `app/.env.example` to `app/.env.local` and set `VITE_GOOGLE_CLIENT_ID`. For deployment, provide that build variable in the hosting build environment and rebuild.
 
-The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests `https://www.googleapis.com/auth/drive.file` for Drive sync. Google Calendar access is not requested in V1.20.1. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use. In Settings, **Create Drive backup** first syncs, then stores a separate JSON snapshot in `Time Audit/Backups`. Restoring a snapshot archives the current split Drive files and marks a new restore generation so an older local cache on an updated device cannot silently merge old entries back. Update other devices to V1.20.1 before reconnecting them after a restore.
+The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests `https://www.googleapis.com/auth/drive.file` for Drive sync. Google Calendar access is not requested in V1.21. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use. In Settings, **Create Drive backup** first syncs, then stores a separate JSON snapshot in `Time Audit/Backups`. Restoring a snapshot archives the current split Drive files and marks a new restore generation so an older local cache on an updated device cannot silently merge old entries back. Update other devices to V1.21 before reconnecting them after a restore.
 
 ## Optional YouVersion verse text setup
 

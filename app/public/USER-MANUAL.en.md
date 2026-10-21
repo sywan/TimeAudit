@@ -1,4 +1,4 @@
-# Time Audit User Guide (V1.20.1)
+# Time Audit User Guide (V1.21)
 
 © 2026–2027 Shu-Yen Wan（萬書言）
 
@@ -11,6 +11,8 @@ Sign in with Google, then use **Authorize sync** at the top to grant Google Driv
 ## 2. Record your day
 
 On Today, add an entry and adjust the start and end times. The default interval is only a starting point; sleep can be one long block. Pick a frequent activity or search. Categories help you browse, while each saved activity has its own ID. Work meeting and Research meeting are separate activities; Research remains available for focused research. Learning / research and Family are category names, and renaming them does not change existing activity IDs. Family includes chores, family time, family trips, parent-child time, time with a partner, and visiting family; caregiving remains under Care. Existing Meeting entries keep their Work activity ID; edit any that were research meetings to select Research meeting. Choose Other to add a reusable activity and adjust its category later in Settings. Feeling, importance, urgency, and value alignment are optional 1–7 ratings; higher means more. You may also add a description and link values or goals. Use Calendar to find and backfill gaps. Swipe left on Today to move forward one day and right to move back; desktop users can use the date arrows.
+
+Personal finance includes budgeting / bookkeeping, banking / post office, investing / market review, currency exchange / foreign funds, and insurance / taxes. Use General finances when a task does not fit one group. Existing custom “理財” entries move into this category while retaining their activity IDs and records.
 
 ## 3. Keep a daily journal
 
@@ -26,6 +28,6 @@ Read the review cards, open source entries, and decide whether a pattern fits yo
 
 ## 6. Sync, backup, and privacy
 
-After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.20.1 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
+After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.21 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
 
 **A good start:** Record for 3–7 days, including sleep and rest, before interpreting charts. Then choose one small experiment.

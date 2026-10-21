@@ -137,6 +137,7 @@ export function publicEquivalentForCustomName(name: string): string | null {
     '研究會議':'learning.researchMeeting', '研究会议':'learning.researchMeeting',
     '家庭相處':'social.family', '家庭相处':'social.family',
     '家庭旅遊':'home.familyTravel', '家庭旅游':'home.familyTravel',
+    '理財':'finance.general', '理财':'finance.general',
   };
   return equivalents[normalized]??null;
 }
@@ -160,7 +161,7 @@ export function withV09CategoryDefaults(state: AuditState): AuditState {
   });
   for (const activity of customActivities) {
     const equivalent = publicEquivalentForCustomName(activity.name);
-    if (equivalent && (!Object.hasOwn(overrides,activity.id) || overrides[activity.id] === 'other')) {
+    if (equivalent && overrides[activity.id] !== categoryOf(equivalent) && (!Object.hasOwn(overrides,activity.id) || overrides[activity.id] === 'other')) {
       overrides[activity.id] = categoryOf(equivalent);
       changed = true;
     }

@@ -29,7 +29,7 @@ const zh = {
   exportJson:'匯出 JSON', exportCsv:'匯出 CSV', importJson:'匯入 JSON', sheet:'Google Sheet 鏡像', openSheet:'開啟試算表',
   questionnaire:'可選量表', questionnaireInfo:'量表可以略過；未填就不計算相應分數。', ipip:'五因素人格量表（IPIP-50）', later:'即將加入正式題目與計分',
   language:'介面語言', account:'帳號', signOut:'登出', privacy:'資料放在你的 Google Drive；本機保留離線快取。',
-  category_work:'工作', category_learning:'學習／研究', category_home:'家庭', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_faith:'信仰', category_travel:'交通', category_life:'生活', category_other:'其他',
+  category_work:'工作', category_learning:'學習／研究', category_home:'家庭', category_care:'照護', category_social:'社交', category_health:'健康', category_rest:'休息', category_entertainment:'娛樂', category_sleep:'睡眠', category_faith:'信仰', category_travel:'交通', category_life:'生活', category_finance:'理財', category_other:'其他',
   activity_deep:'深度工作', activity_writing:'寫作／報告', activity_meeting:'工作會議', activity_messages:'回訊／郵件', activity_admin:'行政', activity_planning:'規劃', activity_teaching:'授課／課程準備',
   activity_reading:'閱讀', activity_course:'上課', activity_practice:'練習', activity_research:'研究', activity_researchMeeting:'研究會議', activity_programming:'撰寫程式',
   activity_cleaning:'清潔', activity_cooking:'煮飯', activity_shopping:'採買', activity_chores:'家務雜事', activity_dishes:'洗碗筷', activity_familyTravel:'家庭旅遊', activity_parentChild:'親子相處', activity_couple:'伴侶相處', activity_visitFamily:'探望家人',
@@ -39,7 +39,7 @@ const zh = {
   activity_break:'短暫休息', activity_nap:'小憩', activity_idle:'放空',
   activity_game:'遊戲', activity_video:'追劇／影片', activity_music:'音樂', activity_socialmedia:'社群媒體',
   activity_night:'夜間睡眠', activity_prayer:'禱告', activity_hymn:'唱詩歌', activity_bibleStudy:'查經', activity_bibleReading:'讀經', activity_devotion:'靈修', activity_worship:'敬拜／聚會', activity_fellowship:'團契／讀書會', activity_commute:'通勤', activity_transit:'大眾運輸', activity_driving:'駕車',
-  activity_meal:'吃飯／用餐', activity_hygiene:'盥洗', activity_other:'自訂活動',
+  activity_meal:'吃飯／用餐', activity_hygiene:'盥洗', activity_financeGeneral:'綜合理財', activity_financePlanning:'財務規劃／記帳', activity_financeBanking:'銀行／郵局業務', activity_financeInvesting:'投資／看盤', activity_financeExchange:'換匯／外幣管理', activity_financeInsuranceTax:'保險／稅務', activity_other:'自訂活動',
 };
 
 const en: Record<keyof typeof zh,string> = {
@@ -69,7 +69,7 @@ const en: Record<keyof typeof zh,string> = {
   exportJson:'Export JSON', exportCsv:'Export CSV', importJson:'Import JSON', sheet:'Google Sheet mirror', openSheet:'Open spreadsheet',
   questionnaire:'Optional questionnaires', questionnaireInfo:'You may skip questionnaires; missing answers do not receive scores.', ipip:'Five-factor inventory (IPIP-50)', later:'Official items and scoring coming next',
   language:'Language', account:'Account', signOut:'Sign out', privacy:'Data lives in your Google Drive; this device keeps an offline cache.',
-  category_work:'Work', category_learning:'Learning / research', category_home:'Family', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_faith:'Faith', category_travel:'Travel', category_life:'Daily living', category_other:'Other',
+  category_work:'Work', category_learning:'Learning / research', category_home:'Family', category_care:'Care', category_social:'Social', category_health:'Health', category_rest:'Rest', category_entertainment:'Entertainment', category_sleep:'Sleep', category_faith:'Faith', category_travel:'Travel', category_life:'Daily living', category_finance:'Personal finance', category_other:'Other',
   activity_deep:'Deep work', activity_writing:'Writing / report', activity_meeting:'Work meeting', activity_messages:'Messages / email', activity_admin:'Administration', activity_planning:'Planning', activity_teaching:'Teaching / course preparation',
   activity_reading:'Reading', activity_course:'Class', activity_practice:'Practice', activity_research:'Research', activity_researchMeeting:'Research meeting', activity_programming:'Programming',
   activity_cleaning:'Cleaning', activity_cooking:'Cooking', activity_shopping:'Shopping', activity_chores:'Chores', activity_dishes:'Washing dishes', activity_familyTravel:'Family trip', activity_parentChild:'Parent-child time', activity_couple:'Time with partner', activity_visitFamily:'Visiting family',
@@ -79,7 +79,7 @@ const en: Record<keyof typeof zh,string> = {
   activity_break:'Short break', activity_nap:'Nap', activity_idle:'Doing nothing',
   activity_game:'Gaming', activity_video:'Shows / video', activity_music:'Music', activity_socialmedia:'Social media',
   activity_night:'Night sleep', activity_prayer:'Prayer', activity_hymn:'Singing hymns', activity_bibleStudy:'Bible study', activity_bibleReading:'Bible reading', activity_devotion:'Devotion', activity_worship:'Worship / gathering', activity_fellowship:'Fellowship / book group', activity_commute:'Commute', activity_transit:'Transit', activity_driving:'Driving',
-  activity_meal:'Meal', activity_hygiene:'Hygiene', activity_other:'Custom activity',
+  activity_meal:'Meal', activity_hygiene:'Hygiene', activity_financeGeneral:'General finances', activity_financePlanning:'Budgeting / bookkeeping', activity_financeBanking:'Banking / post office', activity_financeInvesting:'Investing / market review', activity_financeExchange:'Currency exchange / foreign funds', activity_financeInsuranceTax:'Insurance / taxes', activity_other:'Custom activity',
 };
 
 export type TranslationKey = keyof typeof zh;
@@ -97,6 +97,7 @@ export const categories: Array<{id:string; key: TranslationKey; color:string; ac
   {id:'faith',key:'category_faith',color:'#8b89a7',activities:[{id:'faith.prayer',key:'activity_prayer'},{id:'faith.hymn',key:'activity_hymn'},{id:'faith.bibleStudy',key:'activity_bibleStudy'},{id:'faith.bibleReading',key:'activity_bibleReading'},{id:'faith.devotion',key:'activity_devotion'},{id:'faith.worship',key:'activity_worship'},{id:'faith.fellowship',key:'activity_fellowship'}]},
   {id:'travel',key:'category_travel',color:'#91a6ab',activities:[{id:'travel.commute',key:'activity_commute'},{id:'travel.transit',key:'activity_transit'},{id:'travel.driving',key:'activity_driving'}]},
   {id:'life',key:'category_life',color:'#b8a38d',activities:[{id:'life.meal',key:'activity_meal'},{id:'life.hygiene',key:'activity_hygiene'}]},
+  {id:'finance',key:'category_finance',color:'#7b9a90',activities:[{id:'finance.general',key:'activity_financeGeneral'},{id:'finance.planning',key:'activity_financePlanning'},{id:'finance.banking',key:'activity_financeBanking'},{id:'finance.investing',key:'activity_financeInvesting'},{id:'finance.exchange',key:'activity_financeExchange'},{id:'finance.insuranceTax',key:'activity_financeInsuranceTax'}]},
   {id:'other',key:'category_other',color:'#a3a9af',activities:[{id:'other.custom',key:'activity_other'}]},
 ];
 

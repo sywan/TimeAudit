@@ -10,6 +10,7 @@ import {journalSummary,journalVersionsForDay,mergeJournalVersions} from '../src/
 import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
 import {dataQuality,weeklyRhythm,weeklyRhythmComposition,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
 import {mergeExperiments} from '../src/experiments.ts';
+import {suggestActivity} from '../src/classify.ts';
 import {mergeInsightFeedback} from '../src/insightFeedback.ts';
 import {activeCompassItems,mergeCompassItems} from '../src/compass.ts';
 
@@ -264,6 +265,25 @@ test('v1.15 puts existing personal teaching records in Work without changing the
   manual.customActivities=state.customActivities;
   manual.categoryOverrides={'custom.teacher-owned':'learning'};
   assert.equal(categoryOf('custom.teacher-owned',withV09CategoryDefaults(manual).categoryOverrides),'learning');
+});
+
+test('v1.21 moves an existing personal finance activity out of Other without rewriting its records', () => {
+  const state=initialState();
+  state.customActivities=[{id:'custom.finance-owned',name:'理財',createdAt:'2026-10-21T00:00:00Z'}];
+  state.categoryOverrides={'custom.finance-owned':'other'};
+  state.entries=[{id:'entry-finance',activityId:'custom.finance-owned',startAt:'2026-10-21T01:00:00Z',endAt:'2026-10-21T02:30:00Z',deletedAt:null}];
+  const migrated=withV09CategoryDefaults(state);
+  assert.equal(categoryOf('custom.finance-owned',migrated.categoryOverrides),'finance');
+  assert.deepEqual(migrated.entries,state.entries);
+  assert.equal(durationMinutes(migrated.entries[0]),90);
+  assert.ok(categories.find(c=>c.id==='finance').activities.some(a=>a.id==='finance.investing'));
+  assert.equal(activityLabel('zh-TW','finance.investing'),'投資／看盤');
+  assert.equal(activityLabel('en','finance.banking'),'Banking / post office');
+  assert.strictEqual(withV09CategoryDefaults(migrated),migrated);
+  const manual={...state,categoryOverrides:{'custom.finance-owned':'work'}};
+  assert.equal(categoryOf('custom.finance-owned',withV09CategoryDefaults(manual).categoryOverrides),'work');
+  assert.equal(suggestActivity('到郵局辦定存')?.id,'finance.banking');
+  assert.equal(suggestActivity('晚上看盤研究股票')?.id,'finance.investing');
 });
 
 test('unused old teaching activity disappears only after its records move', () => {

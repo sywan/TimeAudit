@@ -19,6 +19,7 @@ export interface Entry {
   updatedAt: string;
   revision: number;
   deletedAt: string | null;
+  source?: {provider:'google_calendar';calendarId:string;eventId:string};
 }
 
 export interface CompassItem { id: string; text: string; updatedAt?: string; deletedAt?: string; }
@@ -73,6 +74,7 @@ export interface AuditState {
   insightFeedback?: InsightFeedback[];
   customActivities?: CustomActivity[];
   categoryOverrides?: Record<string, string>;
+  restoreEpoch?: string;
   updatedAt: string;
 }
 

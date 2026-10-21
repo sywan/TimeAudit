@@ -1,6 +1,6 @@
 # Time Audit
 
-**目前開發版本：V1.16版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
+**目前開發版本：V1.20版。** © 2026–2027 Shu-Yen Wan（萬書言）。[版權聲明](./app/public/copyright.html)。
 
 A React web app for recording the full 24 hours of each day and reviewing how time is allocated. The interface uses a quiet blue palette and supports Traditional Chinese and English.
 
@@ -9,13 +9,13 @@ A React web app for recording the full 24 hours of each day and reviewing how ti
 ## Current features
 
 - Editable start and end times, 5-minute adjustment buttons, activity chips, custom descriptions, three optional 1–7 ratings, and an optional 1–7 activity feeling rating.
-- Sleep and rest entries, month calendar, day timeline, and backfilling gaps.
+- Sleep and rest entries, month calendar, day timeline, and backfilling gaps. Google Calendar timed events can be previewed, reclassified, retimed, and selectively imported into the Time Audit calendar without changing Google Calendar.
 - Local, explainable keyword suggestions for free text; the user confirms the category and keeps the original description.
 - Duration-weighted category, rating, importance × urgency, and goal charts, including separate unrecorded and unrated time. Data quality, a 7×24 weekly rhythm with category-coloured hour segments, and work recorded outside user-selected hours are also shown.
 - An optional daily mood rating in the journal and exploratory mood comparisons with data sufficiency checks.
 - Weekly evidence cards with source links and usefulness feedback, plus saved if–then experiments with baseline and review snapshots.
 - Optional public-domain IPIP-50 questionnaire with scores only when all items are answered.
-- Google sign-in and user-authorized `drive.file` sync; local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
+- Google sign-in and user-authorized `drive.file` sync; independent JSON backup copies can be created in the user’s Drive and reviewed before restore. Restore first archives the current Drive files. Local IndexedDB cache, JSON/CSV export, and JSON import also work in device-only preview mode.
 - Browser-open reminders, quiet hours, installable PWA shell, and responsive mobile layout.
 - Install from iPhone Safari's Share → Add to Home Screen, or from Chrome/Edge's address bar or menu. The app does not show a duplicate install button when the browser controls installation.
 - Drive sync shows live stage and file progress. The Today card links to the selected day’s YouVersion Verse of the Day; with an approved YouVersion App Key it displays the passage in Traditional Chinese CCBT (當代譯本) or English NASB 2020. The Time Audit logo appears in the app, home screen icon, and browser tab.
@@ -44,11 +44,11 @@ Open `http://127.0.0.1:5173`. Without a Google OAuth client ID, the landing page
 The app publisher performs this setup once. End users only click the Google sign-in button and grant Drive access in Google's consent window. A browser-only app cannot create its own Google OAuth registration at runtime.
 
 1. In Google Cloud, create or select a project and configure the OAuth consent screen. Add any test users while the app is in testing mode.
-2. Enable **Google Drive API** and **Google Sheets API**.
+2. Enable **Google Drive API**, **Google Sheets API**, and **Google Calendar API**.
 3. Create an **OAuth 2.0 Web application** client. Add the local and deployed site origins under Authorized JavaScript origins, for example `http://127.0.0.1:5173` and the final `https://…` site origin.
 4. Copy `app/.env.example` to `app/.env.local` and set `VITE_GOOGLE_CLIENT_ID`. For deployment, provide that build variable in the hosting build environment and rebuild.
 
-The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests only `https://www.googleapis.com/auth/drive.file`. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use.
+The ID is a public browser client identifier, not a secret. Do not put a client secret in the web app. The app requests `https://www.googleapis.com/auth/drive.file` for Drive sync. When a user clicks **Import Google Calendar**, it separately requests `https://www.googleapis.com/auth/calendar.events.readonly` to read events from that user’s primary calendar. In the OAuth consent configuration, add the Calendar read-only scope and complete any Google verification required for public users. Until that is approved, Calendar import may be restricted to test users even if the rest of the app works. It creates a `Time Audit` folder, monthly JSON files, `profile.json`, and a Sheet mirror in **each user's own Drive**. The publisher's Site stores no journal entries. The user's browser keeps an IndexedDB cache for offline use. In Settings, **Create Drive backup** first syncs, then stores a separate JSON snapshot in `Time Audit/Backups`. Restoring a snapshot archives the current split Drive files and marks a new restore generation so an older local cache on an updated device cannot silently merge old entries back. Update other devices to V1.20 before reconnecting them after a restore.
 
 ## Optional YouVersion verse text setup
 

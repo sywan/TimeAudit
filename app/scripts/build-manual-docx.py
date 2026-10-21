@@ -90,7 +90,7 @@ def build(language):
 
     footer = section.footer.paragraphs[0]
     footer.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    footer.add_run("V1.16  ·  ")
+    footer.add_run("V1.20  ·  ")
     field = OxmlElement("w:fldSimple")
     field.set(qn("w:instr"), "PAGE")
     footer._p.append(field)
@@ -110,8 +110,6 @@ def build(language):
         elif line.startswith("## "):
             p = doc.add_paragraph(style="Heading 1")
             add_inline(p, line[3:])
-            if language == "en" and line.startswith("## 5. "):
-                p.paragraph_format.page_break_before = True
         elif line.startswith("- "):
             p = doc.add_paragraph(style="List Bullet")
             add_inline(p, line[2:])

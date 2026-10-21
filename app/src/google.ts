@@ -1,7 +1,7 @@
 import type { Profile } from './types';
 
 interface CredentialResponse { credential?: string; }
-interface TokenResponse { access_token?: string; error?: string; }
+interface TokenResponse { access_token?: string; error?: string; scope?: string; }
 interface GoogleAccounts {
   id: {
     initialize(options:{client_id:string;callback:(response:CredentialResponse)=>void;auto_select?:boolean}):void;
@@ -48,16 +48,17 @@ export async function mountGoogleButton(element:HTMLElement,onProfile:(profile:P
   accounts.id.renderButton(element,{type:'standard',theme:'outline',size:'large',shape:'pill',text:'continue_with',width:300});
 }
 
-export async function requestDriveToken(expectedSub:string):Promise<string> {
+async function requestToken(expectedSub:string,scope:string,label:string):Promise<string> {
   const accounts=window.google?.accounts ?? await waitForGoogle();
   return new Promise((resolve,reject)=>{
-    const client=accounts.oauth2.initTokenClient({client_id:googleClientId,scope:'openid profile email https://www.googleapis.com/auth/drive.file',login_hint:expectedSub,error_callback:error=>{
-      reject(new Error(error.type==='popup_closed'?'Google Drive authorization was closed.':error.type==='popup_failed_to_open'?'The browser blocked Google Drive authorization. Please allow pop-ups for this site.':`Google Drive authorization error: ${error.type}`));
+    const client=accounts.oauth2.initTokenClient({client_id:googleClientId,scope:`openid profile email ${scope}`,login_hint:expectedSub,error_callback:error=>{
+      reject(new Error(error.type==='popup_closed'?`${label} authorization was closed.`:error.type==='popup_failed_to_open'?`The browser blocked ${label} authorization. Please allow pop-ups for this site.`:`${label} authorization error: ${error.type}`));
     },callback:async r=>{
-      if(!r.access_token){reject(new Error(r.error??'Google Drive authorization failed'));return;}
+      if(!r.access_token){reject(new Error(r.error??`${label} authorization failed`));return;}
       try{
+        if(r.scope&&!r.scope.split(' ').includes(scope))throw new Error(`${label} permission was not granted.`);
         const response=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:`Bearer ${r.access_token}`}});
-        if(!response.ok)throw new Error('Could not verify the Google Drive account');
+        if(!response.ok)throw new Error(`Could not verify the ${label} account`);
         const user=await response.json() as {sub?:string};
         if(user.sub!==expectedSub){accounts.oauth2.revoke(r.access_token,()=>{});throw new Error('Please authorize the same Google account used to sign in.');}
         resolve(r.access_token);
@@ -66,5 +67,8 @@ export async function requestDriveToken(expectedSub:string):Promise<string> {
     client.requestAccessToken({prompt:''});
   });
 }
+
+export const requestDriveToken=(expectedSub:string)=>requestToken(expectedSub,'https://www.googleapis.com/auth/drive.file','Google Drive');
+export const requestCalendarToken=(expectedSub:string)=>requestToken(expectedSub,'https://www.googleapis.com/auth/calendar.events.readonly','Google Calendar');
 
 export function signOutGoogle() { window.google?.accounts.id.disableAutoSelect(); }

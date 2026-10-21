@@ -214,3 +214,26 @@
 .logo-story-popover p{margin:0}
 .settings-grid{align-items:start}
 .site-usage-card{grid-column:1/-1}.usage-stats-frame{display:block;width:100%;min-height:460px;margin:12px 0;border:1px solid #dbe8ef;border-radius:10px;background:#f8fbfd}.settings-card details:has(.usage-stats-frame){margin:12px 0}.settings-card details:has(.usage-stats-frame) summary{cursor:pointer;color:#527a96;font-weight:700;font-size:.75rem}
+
+/* Calendar import and independent Drive backups (V1.20). */
+.calendar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.calendar-import-dialog{width:min(860px,100%)}
+.calendar-import-range,.calendar-import-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.calendar-import-range{grid-template-columns:repeat(2,minmax(0,1fr)) auto;margin:16px 0}
+.calendar-import-range label,.calendar-import-fields label{display:grid;gap:5px;color:#59788d;font-size:.6875rem;font-weight:700;min-width:0}
+.calendar-import-range input,.calendar-import-fields input,.calendar-import-fields select{width:100%;min-width:0}
+.calendar-import-list{display:grid;gap:10px;max-height:50vh;overflow:auto;padding-right:2px}
+.calendar-import-list article{border:1px solid #e1ebf1;border-radius:11px;padding:14px;background:#fbfdfe}
+.calendar-import-list article.selected{border-color:#9fc4d9;background:#f3f9fc}
+.calendar-import-check{display:flex;align-items:center;gap:8px;color:#30536b;font-size:.75rem;margin-bottom:9px}
+.calendar-import-check input{accent-color:#5588a9}
+.calendar-import-warning{display:block;color:#ad6e56;margin-bottom:8px;font-size:.625rem}
+.calendar-import-message{color:#9b654b;background:#fff8f1;border-radius:7px;padding:9px 11px;font-size:.6875rem}
+.drive-backup-list{display:grid;gap:7px;margin-top:15px;max-height:190px;overflow:auto}
+.drive-backup-list button{display:flex;align-items:center;gap:9px;border:1px solid #e1ebf1;background:#f9fcfe;border-radius:8px;padding:10px;text-align:left;color:#50758c;min-width:0}
+.drive-backup-list button.selected{border-color:#8bb9d0;background:#eaf5fa}
+.drive-backup-list span{min-width:0;overflow-wrap:anywhere;font-size:.6875rem}
+.drive-backup-list small{display:block;color:#91a7b4;margin-top:3px}
+.drive-backup-preview{margin-top:13px;padding:13px;border:1px solid #d8e8f0;background:#f4f9fc;border-radius:9px;font-size:.6875rem;color:#506f82}
+.drive-backup-preview p{margin:7px 0;line-height:1.6}
+@media(max-width:760px){.calendar-import-range{grid-template-columns:repeat(2,minmax(0,1fr))}.calendar-import-range button{grid-column:1/-1}.calendar-import-fields{grid-template-columns:minmax(0,1fr)}.calendar-actions{justify-content:flex-start}.calendar-actions button{flex:1;white-space:normal}}

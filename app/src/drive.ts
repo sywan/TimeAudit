@@ -15,7 +15,7 @@ async function api<T>(url:string,token:string,init:RequestInit={}):Promise<T> {
   return response.json() as Promise<T>;
 }
 
-interface DriveFile {id:string;name:string;parents?:string[];}
+interface DriveFile {id:string;name:string;parents?:string[];createdTime?:string;mimeType?:string;}
 
 const escapeQ=(value:string)=>value.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
@@ -26,12 +26,13 @@ async function findFile(name:string,token:string,parent?:string):Promise<DriveFi
   return result.files[0]??null;
 }
 
-async function createFolder(token:string):Promise<string>{
-  const found=await findFile('Time Audit',token);
+async function ensureFolder(name:string,token:string,parent?:string):Promise<string>{
+  const found=await findFile(name,token,parent);
   if(found)return found.id;
-  const created=await api<DriveFile>(`${DRIVE}/files?fields=id,name`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Time Audit',mimeType:'application/vnd.google-apps.folder'})});
+  const created=await api<DriveFile>(`${DRIVE}/files?fields=id,name`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',...(parent?{parents:[parent]}:{})})});
   return created.id;
 }
+const createFolder=(token:string)=>ensureFolder('Time Audit',token);
 
 async function createJsonFile(name:string,parent:string,data:unknown,token:string):Promise<string>{
   const boundary=`timeaudit_${crypto.randomUUID()}`;
@@ -58,7 +59,7 @@ async function listFiles(parent:string,token:string):Promise<DriveFile[]>{
   let pageToken='';
   do{
     const q=`'${escapeQ(parent)}' in parents and trashed = false`;
-    const params=new URLSearchParams({q,fields:'files(id,name),nextPageToken',pageSize:'1000'});
+    const params=new URLSearchParams({q,fields:'files(id,name,createdTime,mimeType),nextPageToken',pageSize:'1000'});
     if(pageToken)params.set('pageToken',pageToken);
     const result=await api<{files:DriveFile[];nextPageToken?:string}>(`${DRIVE}/files?${params}`,token);
     files.push(...result.files);pageToken=result.nextPageToken??'';
@@ -69,6 +70,67 @@ async function listFiles(parent:string,token:string):Promise<DriveFile[]>{
 export interface SyncConflict {local:Entry;remote:Entry;}
 export interface SyncProgress {stage:'authorization'|'discover'|'download'|'upload'|'sheet';completed:number;total:number;}
 export type SyncProgressReporter=(progress:SyncProgress)=>void;
+
+export interface DriveBackup {id:string;name:string;createdAt:string;}
+export interface BackupPayload {format:'time-audit-backup';version:1;createdAt:string;state:AuditState;}
+
+export function validateBackupPayload(value:unknown):BackupPayload {
+  if(!value||typeof value!=='object')throw new Error('This is not a Time Audit backup.');
+  const payload=value as Partial<BackupPayload>;
+  const state=payload.state;
+  if(payload.format!=='time-audit-backup'||payload.version!==1||!state||state.schemaVersion!=='0.2'||!Array.isArray(state.entries)||!Array.isArray(state.values)||!Array.isArray(state.goals)||!Array.isArray(state.questionnaires)||!Array.isArray(state.experiments)||!state.preferences||typeof state.preferences.locale!=='string'||!state.entries.every(item=>item&&typeof item.id==='string'&&Number.isFinite(Date.parse(item.startAt))&&Number.isFinite(Date.parse(item.endAt))))throw new Error('The backup is incomplete or damaged.');
+  return payload as BackupPayload;
+}
+
+const backupName=(prefix:string)=>`${prefix}-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+const dataFile=(name:string)=>name==='profile.json'||/^(entries-\d{4}-\d{2}|compass-(value|goal)-.+|questionnaire-.+|journal-.+|experiment-.+|insight-feedback-.+)\.json$/.test(name);
+
+export async function createDriveBackup(state:AuditState,token:string,prefix='backup'):Promise<DriveBackup> {
+  const root=await createFolder(token);
+  const folder=await ensureFolder('Backups',token,root);
+  const createdAt=new Date().toISOString();
+  const name=backupName(prefix);
+  const id=await createJsonFile(name,folder,{format:'time-audit-backup',version:1,createdAt,state} satisfies BackupPayload,token);
+  return {id,name,createdAt};
+}
+
+export async function listDriveBackups(token:string):Promise<DriveBackup[]> {
+  const root=await createFolder(token);
+  const folder=await ensureFolder('Backups',token,root);
+  return (await listFiles(folder,token)).filter(file=>/^(backup|before-restore)-.+\.json$/.test(file.name)).map(file=>({id:file.id,name:file.name,createdAt:file.createdTime??''})).sort((a,b)=>b.name.localeCompare(a.name));
+}
+
+export async function readDriveBackup(id:string,token:string):Promise<BackupPayload> {
+  return validateBackupPayload(await getJson<unknown>({id,name:''},token));
+}
+
+async function moveFile(fileId:string,from:string,to:string,token:string):Promise<void>{
+  const params=new URLSearchParams({addParents:to,removeParents:from,fields:'id,parents'});
+  await api(`${DRIVE}/files/${encodeURIComponent(fileId)}?${params}`,token,{method:'PATCH'});
+}
+
+export async function restoreDriveBackup(current:AuditState,snapshot:AuditState,token:string,onProgress?:SyncProgressReporter):Promise<{state:AuditState;folderId:string}> {
+  // Before replacing the live files, keep both an immutable local-state copy
+  // and the existing split Drive files in a dated archive folder.
+  await createDriveBackup(current,token,'before-restore');
+  const root=await createFolder(token);
+  const backupFolder=await ensureFolder('Backups',token,root);
+  const archive=await ensureFolder(`Archive before restore ${new Date().toISOString().replace(/[:.]/g,'-')}`,token,backupFolder);
+  const oldFiles=(await listFiles(root,token)).filter(file=>dataFile(file.name));
+  const moved:DriveFile[]=[];
+  try{
+    for(const file of oldFiles){await moveFile(file.id,root,archive,token);moved.push(file);}
+    const restored=withV09CategoryDefaults({...snapshot,restoreEpoch:new Date().toISOString(),updatedAt:new Date().toISOString()});
+    const result=await syncWithDrive(restored,token,onProgress);
+    if(result.conflicts.length)throw new Error('The restored copy conflicts with current Drive files.');
+    return {state:result.state,folderId:result.folderId};
+  }catch(error){
+    // Put any partial replacement aside, then return the original live files.
+    for(const file of (await listFiles(root,token)).filter(item=>dataFile(item.name))){try{await moveFile(file.id,root,archive,token);}catch{/* The original archive remains available. */}}
+    for(const file of moved){try{await moveFile(file.id,archive,root,token);}catch{/* The original archive remains available. */}}
+    throw error;
+  }
+}
 
 export function mergeQuestionnaires(local:QuestionnaireResult[],remote:QuestionnaireResult[]):QuestionnaireResult[]{
   const merged=new Map<string,QuestionnaireResult>();
@@ -115,6 +177,10 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
     return data;
   };
   const remoteProfile=profileFile?await readJson<Partial<AuditState>>(profileFile):null;
+  const localEpoch=local.restoreEpoch??'',remoteEpoch=remoteProfile?.restoreEpoch??'';
+  const useRemote=remoteEpoch>=localEpoch;
+  const localBase=remoteEpoch>localEpoch?initialState():local;
+  const profileBase=useRemote?remoteProfile:null;
   const readCompass=async(file:DriveFile):Promise<CompassItem|null>=>{
     const data=await readJson<{item:CompassItem}|CompassItem>(file);
     const item='item' in data?data.item:data;
@@ -139,29 +205,30 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
     return 'feedback' in data?data.feedback:data;
   }))).filter(item=>item&&typeof item.id==='string');
   const remoteEntries=(await Promise.all(monthFiles.map(f=>readJson<{entries:Entry[]}>(f)))).flatMap(x=>x.entries??[]);
-  const {entries,conflicts}=mergeEntries(local.entries,remoteEntries);
-  const remoteProfileIsNewer=Boolean(remoteProfile && (remoteProfile.updatedAt??'')>local.updatedAt);
+  const {entries,conflicts}=mergeEntries(localBase.entries,useRemote?remoteEntries:[]);
+  const remoteProfileIsNewer=Boolean(profileBase && (remoteEpoch>localEpoch||(profileBase.updatedAt??'')>localBase.updatedAt));
   const state:AuditState=withV09CategoryDefaults({
     ...initialState(),
-    ...local,
-    ...(remoteProfileIsNewer && remoteProfile ? {
-      preferences:{...local.preferences,...remoteProfile.preferences},
-      experiments:mergeExperiments(local.experiments??[],remoteProfile.experiments??[]),
-      customActivities:remoteProfile.customActivities??local.customActivities,
-      updatedAt:remoteProfile.updatedAt??local.updatedAt,
+    ...localBase,
+    ...(remoteProfileIsNewer && profileBase ? {
+      preferences:{...localBase.preferences,...profileBase.preferences},
+      experiments:mergeExperiments(localBase.experiments??[],profileBase.experiments??[]),
+      customActivities:profileBase.customActivities??localBase.customActivities,
+      updatedAt:profileBase.updatedAt??localBase.updatedAt,
     }:{}),
+    restoreEpoch:remoteEpoch>localEpoch?remoteEpoch:localEpoch,
     // A profile's updatedAt also changes for unrelated preferences. Never use
     // it to choose an entire value/goal list over another device's list.
-    values:mergeCompassItems(remoteProfile?.values??[],local.values??[],remoteValues),
-    goals:mergeCompassItems(remoteProfile?.goals??[],local.goals??[],remoteGoals),
+    values:mergeCompassItems(profileBase?.values??[],localBase.values??[],useRemote?remoteValues:[]),
+    goals:mergeCompassItems(profileBase?.goals??[],localBase.goals??[],useRemote?remoteGoals:[]),
     categoryOverrides:remoteProfileIsNewer
-      ? {...(local.categoryOverrides??{}),...(remoteProfile?.categoryOverrides??{})}
-      : {...(remoteProfile?.categoryOverrides??{}),...(local.categoryOverrides??{})},
-    customActivities:[...new Map([...(remoteProfile?.customActivities??[]),...(local.customActivities??[])].map(item=>[item.id,item])).values()],
-    questionnaires:mergeQuestionnaires(mergeQuestionnaires(local.questionnaires??[],remoteProfile?.questionnaires??[]),remoteQuestionnaires),
-    journals:mergeJournalVersions(local.journals??[],remoteProfile?.journals??[],remoteJournals),
-    experiments:mergeExperiments(local.experiments??[],remoteProfile?.experiments??[],remoteExperiments),
-    insightFeedback:mergeInsightFeedback(local.insightFeedback??[],remoteProfile?.insightFeedback??[],remoteFeedback),
+      ? {...(localBase.categoryOverrides??{}),...(profileBase?.categoryOverrides??{})}
+      : {...(profileBase?.categoryOverrides??{}),...(localBase.categoryOverrides??{})},
+    customActivities:[...new Map([...(profileBase?.customActivities??[]),...(localBase.customActivities??[])].map(item=>[item.id,item])).values()],
+    questionnaires:mergeQuestionnaires(mergeQuestionnaires(localBase.questionnaires??[],profileBase?.questionnaires??[]),useRemote?remoteQuestionnaires:[]),
+    journals:mergeJournalVersions(localBase.journals??[],profileBase?.journals??[],useRemote?remoteJournals:[]),
+    experiments:mergeExperiments(localBase.experiments??[],profileBase?.experiments??[],useRemote?remoteExperiments:[]),
+    insightFeedback:mergeInsightFeedback(localBase.insightFeedback??[],profileBase?.insightFeedback??[],useRemote?remoteFeedback:[]),
     entries,
   });
   // Each completed result has its own Drive file. A newer profile/settings write
@@ -199,7 +266,7 @@ export async function syncWithDrive(local:AuditState,token:string,onProgress?:Sy
   for(const feedback of pendingFeedback)await writeJson(`insight-feedback-${encodeURIComponent(feedback.id)}.json`,{schemaVersion:'0.2',feedback});
   if(conflicts.length)return {state,conflicts,folderId};
   for(const [month,items] of grouped)await writeJson(`entries-${month}.json`,{schemaVersion:'0.2',entries:items});
-  await writeJson('profile.json',{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,insightFeedback:state.insightFeedback??[],customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},updatedAt:state.updatedAt});
+  await writeJson('profile.json',{schemaVersion:'0.2',values:state.values,goals:state.goals,preferences:state.preferences,questionnaires:state.questionnaires,journals:state.journals??[],experiments:state.experiments,insightFeedback:state.insightFeedback??[],customActivities:state.customActivities??[],categoryOverrides:state.categoryOverrides??{},restoreEpoch:state.restoreEpoch??'',updatedAt:state.updatedAt});
   return {state,conflicts,folderId};
 }
 

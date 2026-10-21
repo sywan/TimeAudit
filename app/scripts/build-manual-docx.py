@@ -59,7 +59,7 @@ def build(language):
     section.header_distance = Cm(1.1)
     section.footer_distance = Cm(1.05)
 
-    east = "Arial Unicode MS" if language == "zh-TW" else "Arial"
+    east = "Heiti TC" if language == "zh-TW" else "Arial"
     western = east if language == "zh-TW" else "Arial"
     normal = doc.styles["Normal"]
     set_font(normal, western, east, 10.5 if language == "zh-TW" else 10.25)
@@ -90,7 +90,7 @@ def build(language):
 
     footer = section.footer.paragraphs[0]
     footer.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    footer.add_run("V1.20  ·  ")
+    footer.add_run("V1.20.1  ·  ")
     field = OxmlElement("w:fldSimple")
     field.set(qn("w:instr"), "PAGE")
     footer._p.append(field)

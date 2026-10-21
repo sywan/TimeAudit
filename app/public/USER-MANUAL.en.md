@@ -1,4 +1,4 @@
-# Time Audit User Guide (V1.20)
+# Time Audit User Guide (V1.20.1)
 
 © 2026–2027 Shu-Yen Wan（萬書言）
 
@@ -12,24 +12,20 @@ Sign in with Google, then use **Authorize sync** at the top to grant Google Driv
 
 On Today, add an entry and adjust the start and end times. The default interval is only a starting point; sleep can be one long block. Pick a frequent activity or search. Categories help you browse, while each saved activity has its own ID. Work meeting and Research meeting are separate activities; Research remains available for focused research. Learning / research and Family are category names, and renaming them does not change existing activity IDs. Family includes chores, family time, family trips, parent-child time, time with a partner, and visiting family; caregiving remains under Care. Existing Meeting entries keep their Work activity ID; edit any that were research meetings to select Research meeting. Choose Other to add a reusable activity and adjust its category later in Settings. Feeling, importance, urgency, and value alignment are optional 1–7 ratings; higher means more. You may also add a description and link values or goals. Use Calendar to find and backfill gaps. Swipe left on Today to move forward one day and right to move back; desktop users can use the date arrows.
 
-## 3. Import from Google Calendar
-
-In Calendar, choose **Import Google Calendar**, select up to 31 days, and click **Authorize & preview**. Calendar permission is separate from sign-in and Drive access. The preview reads timed events from your primary calendar, skipping all-day and previously imported events. Edit the title, activity, start/end times, and selection for each event; overlapping events start unchecked. Imported events become editable Time Audit entries and never change Google Calendar. Import only activities that actually occurred, then add ratings if useful.
-
-## 4. Keep a daily journal
+## 3. Keep a daily journal
 
 The journal includes an activity summary that updates when more entries are added. Write a personal note and optionally rate daily mood from 1 to 7. Notes autosave. Try the microphone for dictation; if browser speech recognition is unavailable, use your phone keyboard microphone and review the resulting text.
 
-## 5. Read insights
+## 3. Read insights
 
 Choose today, the last 3, 7, or 30 days, six months, or one year. Reflection also has adjustable ranges. Check data quality and unrecorded hours before interpreting allocation, ratings, and goal time. Charts use actual duration, not entry count. Weekly rhythm displays seven days and 24 hours; the boundary view checks work against the hours you set. Mood comparisons are exploratory prompts, not diagnoses. Consider unrated and unrecorded time too.
 
-## 6. Turn reflection into action
+## 3. Turn reflection into action
 
 Read the review cards, open source entries, and decide whether a pattern fits your experience. Try one small if–then experiment per week, such as “If I start watching a show after dinner, then I will read for ten minutes first.” Compare before and after. Values and goals can be created in Settings and linked to entries. Zero goal minutes can simply mean that data has not been linked.
 
-## 7. Sync, backup, and privacy
+## 3. Sync, backup, and privacy
 
-After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.20 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
+After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.20.1 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
 
 **A good start:** Record for 3–7 days, including sleep and rest, before interpreting charts. Then choose one small experiment.

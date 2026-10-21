@@ -15,7 +15,7 @@ const zh = {
   selectRatings:'請為三個量尺選擇 1–7 或「暫不評估」', invalidTime:'結束時間必須晚於開始時間', futureTime:'不能記錄尚未發生的時間', overlap:'這段時間與另一筆主要活動重疊，請調整起訖。',
   todayOverview:'今天的時間', recorded:'已記錄', unknown:'尚未記錄', liveDay:'未來時段', coverage:'覆蓋率',
   todayPrompt:'從剛才的一段時間開始', quickRecord:'快速記錄', viewCalendar:'查看日曆',
-  monthOverview:'月曆總覽', dayTimeline:'當日時間軸', emptySlot:'點選空白時段補登', backfill:'補登', recallConfidence:'回憶信心', highConfidence:'高', mediumConfidence:'中', lowConfidence:'低',
+  monthOverview:'日曆綜覽', dayTimeline:'當日時間軸', emptySlot:'點選空白時段補登', backfill:'補登', recallConfidence:'回憶信心', highConfidence:'高', mediumConfidence:'中', lowConfidence:'低',
   totalByCategory:'時間流向', valueChart:'三個量尺的時間分布', reportedMinutes:'有評分鐘', unratedMinutes:'未評分鐘',
   dateRange:'期間', sevenDays:'7 天', thirtyDays:'30 天', todayOnly:'今天', noData:'這段期間還沒有足夠紀錄。',
   reflectTitle:'從資料開始提問', reflectLead:'以下是可檢查的線索，不是人格或心理診斷。',

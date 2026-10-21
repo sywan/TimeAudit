@@ -1,31 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initialState} from '../src/types.ts';
-import {listCalendarCandidates,hasCalendarSource,overlapsRecorded} from '../src/calendar.ts';
 import {syncWithDrive,validateBackupPayload,restoreDriveBackup} from '../src/drive.ts';
 
 const oldEntry={id:'stale',startAt:'2026-10-20T09:00:00Z',endAt:'2026-10-20T10:00:00Z',activityId:'work.deep',ratings:{importance:null,urgency:null,valueAlignment:null},revision:1,deletedAt:null};
-
-test('Calendar import reads timed events across pages and skips all-day items',async()=>{
-  const original=globalThis.fetch;
-  const requests=[];
-  globalThis.fetch=async input=>{
-    const url=new URL(String(input));requests.push(url);
-    assert.equal(url.searchParams.get('singleEvents'),'true');
-    if(!url.searchParams.has('pageToken'))return Response.json({items:[{id:'one',summary:'Research meeting',start:{dateTime:'2026-10-20T09:00:00+08:00'},end:{dateTime:'2026-10-20T10:00:00+08:00'}},{id:'all-day',start:{date:'2026-10-20'},end:{date:'2026-10-21'}}],nextPageToken:'next'});
-    return Response.json({items:[{id:'two',summary:'Gym',start:{dateTime:'2026-10-21T14:00:00+08:00'},end:{dateTime:'2026-10-21T15:00:00+08:00'}}]});
-  };
-  try{
-    const result=await listCalendarCandidates('2026-10-20','2026-10-21','token');
-    assert.deepEqual(result.events.map(event=>event.eventId),['one','two']);
-    assert.equal(result.allDaySkipped,1);
-    assert.equal(requests.length,2);
-    assert.equal(requests[1].searchParams.get('pageToken'),'next');
-    assert.equal(hasCalendarSource([{...oldEntry,source:{provider:'google_calendar',calendarId:'primary',eventId:'one'}}],'one'),true);
-    assert.equal(overlapsRecorded([oldEntry],'2026-10-20T09:30:00Z','2026-10-20T10:30:00Z'),true);
-    await assert.rejects(listCalendarCandidates('2026-10-01','2026-11-10','token'),/up to 31 days/);
-  }finally{globalThis.fetch=original;}
-});
 
 test('backup validation rejects incomplete snapshots',()=>{
   const state=initialState();

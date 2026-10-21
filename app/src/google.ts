@@ -69,6 +69,5 @@ async function requestToken(expectedSub:string,scope:string,label:string):Promis
 }
 
 export const requestDriveToken=(expectedSub:string)=>requestToken(expectedSub,'https://www.googleapis.com/auth/drive.file','Google Drive');
-export const requestCalendarToken=(expectedSub:string)=>requestToken(expectedSub,'https://www.googleapis.com/auth/calendar.events.readonly','Google Calendar');
 
 export function signOutGoogle() { window.google?.accounts.id.disableAutoSelect(); }

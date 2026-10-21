@@ -25,7 +25,7 @@ GitHub Pages 解決的是**網站公開託管**。Google OAuth Testing 模式可
 1. **準備可控制 DNS 的網域。** 建議使用自己的網域與子網域，例如 `audit.your-domain.example`。在 GitHub Pages 設定 Custom domain，依 GitHub 指示設定 DNS CNAME；在 Google Search Console 以 Google Cloud 專案 Owner 帳號建立 **Domain property**，加入 DNS TXT 並驗證。購買網域是發佈者自行決定的付費步驟；目前沒有執行。
 2. **審閱網站政策頁。** 已準備 `/privacy.html` 與 `/terms.html` 草案。公開前請確認資料處理文字、發佈者身分和支援聯絡信箱，並將它們放在自有網域下。必要時更新首頁文字與圖示。
 3. **建立 Google Cloud 專案。** 在 Google Auth Platform 設定品牌名稱、支援電子郵件、首頁、隱私權政策和服務條款網址；使用對外（External）受眾。尚在 Testing 階段時，先加入測試帳號。
-4. **啟用 API 與權限。** 啟用 Google Drive API、Google Sheets API、Google Calendar API；在 Data Access 加入 `https://www.googleapis.com/auth/drive.file` 與行事曆匯入使用的 `https://www.googleapis.com/auth/calendar.events.readonly`。行事曆是使用者主動按匯入時另行授權，公開使用可能需要 Google 的敏感權限審查。應用程式也使用 OpenID 基本身分資訊（`openid profile email`）核對登入帳號與 Drive 授權帳號相同。不要要求完整 Drive 權限。
+4. **啟用 API 與權限。** 啟用 Google Drive API 與 Google Sheets API；在 Data Access 加入 `https://www.googleapis.com/auth/drive.file`。目前已撤回 Google Calendar 匯入，無須加入 Calendar 權限。應用程式也使用 OpenID 基本身分資訊（`openid profile email`）核對登入帳號與 Drive 授權帳號相同。不要要求完整 Drive 權限。
 5. **建立 OAuth 用戶端。** 類型選 **Web application**，在 Authorized JavaScript origins 加入正式網站的完整 origin，例如 `https://audit.your-domain.example`。本機開發可另加 `http://127.0.0.1:5173`。這個前端 token flow 不使用 client secret，也不需要自訂 redirect URI。複製 `…apps.googleusercontent.com` 結尾的 **Client ID**。
 6. **設定建置並發佈。** 將 Client ID 設為 `VITE_GOOGLE_CLIENT_ID`，重新建置並部署網站。Client ID 可公開在瀏覽器程式中；**不要**把 Client Secret 放到網頁或 Git。原始碼的 `app/.env.example` 提供格式。
 7. **端到端驗收。** 用另一個 Google 測試帳號，在正式網域登入並授權 Drive，新增一筆紀錄，確認自己的 Drive 出現 `Time Audit` 資料夾、月份 JSON、`profile.json` 與試算表；換裝置登入同一帳號後確認紀錄。再用不同帳號確認彼此資料不互通，並測試撤銷授權、重新授權及匯出。

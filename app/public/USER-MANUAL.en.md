@@ -16,15 +16,15 @@ On Today, add an entry and adjust the start and end times. The default interval 
 
 The journal includes an activity summary that updates when more entries are added. Write a personal note and optionally rate daily mood from 1 to 7. Notes autosave. Try the microphone for dictation; if browser speech recognition is unavailable, use your phone keyboard microphone and review the resulting text.
 
-## 3. Read insights
+## 4. Read insights
 
 Choose today, the last 3, 7, or 30 days, six months, or one year. Reflection also has adjustable ranges. Check data quality and unrecorded hours before interpreting allocation, ratings, and goal time. Charts use actual duration, not entry count. Weekly rhythm displays seven days and 24 hours; the boundary view checks work against the hours you set. Mood comparisons are exploratory prompts, not diagnoses. Consider unrated and unrecorded time too.
 
-## 3. Turn reflection into action
+## 5. Turn reflection into action
 
 Read the review cards, open source entries, and decide whether a pattern fits your experience. Try one small if–then experiment per week, such as “If I start watching a show after dinner, then I will read for ten minutes first.” Compare before and after. Values and goals can be created in Settings and linked to entries. Zero goal minutes can simply mean that data has not been linked.
 
-## 3. Sync, backup, and privacy
+## 6. Sync, backup, and privacy
 
 After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.20.1 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
 

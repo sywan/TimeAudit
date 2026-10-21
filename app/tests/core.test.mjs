@@ -190,6 +190,24 @@ test('stable activity IDs can move between logical categories without changing t
   assert.equal(activityLabel('zh-TW','custom.fixed-id',[{id:'custom.fixed-id',name:'園藝',createdAt:''}]),'園藝');
 });
 
+test('v1.16 separates research meetings from work meetings and moves family time without changing old IDs', async () => {
+  const {suggestActivity}=await import('../src/classify.ts');
+  assert.equal(categoryOf('work.meeting'),'work');
+  assert.equal(categoryOf('learning.research'),'learning');
+  assert.equal(categoryOf('learning.researchMeeting'),'learning');
+  assert.equal(activityLabel('zh-TW','work.meeting'),'工作會議');
+  assert.equal(activityLabel('zh-TW','learning.researchMeeting'),'研究會議');
+  assert.equal(activityLabel('zh-TW','learning.research'),'研究');
+  assert.equal(suggestActivity('與研究生開會')?.id,'learning.researchMeeting');
+  assert.equal(suggestActivity('下午工作會議')?.id,'work.meeting');
+  assert.equal(categoryOf('social.family'),'home');
+  assert.equal(categoryOf('social.family',{'social.family':'social'}),'social');
+  const family=categories.find(c=>c.id==='home');
+  assert.ok(family?.activities.some(a=>a.id==='social.family'));
+  assert.ok(family?.activities.some(a=>a.id==='home.familyTravel'));
+  assert.equal(activityLabel('en','home.familyTravel'),'Family trip');
+});
+
 test('v0.9 reclassifies matching personal activities while preserving IDs and manual choices', () => {
   const state=initialState();
   state.customActivities=[

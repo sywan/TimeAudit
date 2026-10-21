@@ -1,4 +1,4 @@
-# Time Audit User Guide (V1.15)
+# Time Audit User Guide (V1.16)
 
 © 2026–2027 Shu-Yen Wan（萬書言）
 
@@ -10,7 +10,7 @@ Sign in with Google, then use **Authorize sync** at the top to grant Google Driv
 
 ## 2. Record your day
 
-On Today, add an entry and adjust the start and end times. The default interval is only a starting point; sleep can be one long block. Pick a frequent activity or search. Categories help you browse, while each saved activity has its own ID. Teaching / course preparation is under Work. Choose Other to add a reusable activity and adjust its category later in Settings. Feeling, importance, urgency, and value alignment are optional 1–7 ratings; higher means more. You may also add a description and link values or goals. Use Calendar to find and backfill gaps. Swipe left on Today to move forward one day and right to move back; desktop users can use the date arrows.
+On Today, add an entry and adjust the start and end times. The default interval is only a starting point; sleep can be one long block. Pick a frequent activity or search. Categories help you browse, while each saved activity has its own ID. Work meeting and Research meeting are separate activities; Research remains available for focused research. Learning / research and Family are category names, and renaming them does not change existing activity IDs. Family includes chores, family time, family trips, parent-child time, time with a partner, and visiting family; caregiving remains under Care. Existing Meeting entries keep their Work activity ID; edit any that were research meetings to select Research meeting. Choose Other to add a reusable activity and adjust its category later in Settings. Feeling, importance, urgency, and value alignment are optional 1–7 ratings; higher means more. You may also add a description and link values or goals. Use Calendar to find and backfill gaps. Swipe left on Today to move forward one day and right to move back; desktop users can use the date arrows.
 
 ## 3. Keep a daily journal
 

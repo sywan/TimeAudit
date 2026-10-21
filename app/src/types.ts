@@ -117,7 +117,7 @@ export function overlapMinutes(entry: Pick<Entry, 'startAt' | 'endAt'>, start: n
 
 // Category is a changeable view of a stable activity ID, never part of the log's identity.
 export function categoryOf(activityId: string, overrides: Record<string,string> = {}): string {
-  return overrides[activityId] ?? (activityId === 'sleep.night' ? 'rest' : activityId.startsWith('custom.') ? 'other' : activityId.split('.')[0] || 'other');
+  return overrides[activityId] ?? (activityId === 'sleep.night' ? 'rest' : activityId === 'social.family' ? 'home' : activityId.startsWith('custom.') ? 'other' : activityId.split('.')[0] || 'other');
 }
 
 export function publicEquivalentForCustomName(name: string): string | null {
@@ -132,6 +132,9 @@ export function publicEquivalentForCustomName(name: string): string | null {
     '授課':'work.teaching', '授课':'work.teaching',
     '課程準備':'work.teaching', '课程准备':'work.teaching',
     '授課課程準備':'work.teaching', '授课课程准备':'work.teaching',
+    '研究會議':'learning.researchMeeting', '研究会议':'learning.researchMeeting',
+    '家庭相處':'social.family', '家庭相处':'social.family',
+    '家庭旅遊':'home.familyTravel', '家庭旅游':'home.familyTravel',
   };
   return equivalents[normalized]??null;
 }

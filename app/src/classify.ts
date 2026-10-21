@@ -1,7 +1,12 @@
 // Local-only, explainable activity suggestions. Text is never sent to a model.
 const rules: Array<{id:string;terms:string[]}> = [
   {id:'work.teaching',terms:['授課','授课','備課','备课','課程準備','课程准备','teaching','lesson prep','course preparation']},
-  {id:'work.meeting',terms:['會議','開會','meeting','sync call']},
+  {id:'learning.researchMeeting',terms:['研究會議','研究会议','研究生開會','研究生开会','學生研究討論','学生研究讨论','research meeting','lab meeting','meeting with graduate students']},
+  {id:'work.meeting',terms:['工作會議','工作会议','職場會議','职场会议','會議','開會','meeting','sync call']},
+  {id:'home.familyTravel',terms:['家庭旅遊','家庭旅游','全家出遊','全家出游','family trip','family vacation']},
+  {id:'home.parentChild',terms:['親子相處','亲子相处','陪孩子','陪小孩','parent-child time','time with kids']},
+  {id:'home.couple',terms:['伴侶相處','伴侣相处','夫妻相處','夫妻相处','time with partner','couple time']},
+  {id:'home.visitFamily',terms:['探望家人','探望父母','看望父母','visiting family','visit parents']},
   {id:'work.writing',terms:['寫報告','寫提案','撰寫','報告','文件','proposal','report','draft']},
   {id:'work.messages',terms:['郵件','電郵','回訊','訊息','email','inbox','messages']},
   {id:'work.deep',terms:['專注工作','深度工作','編程','程式','coding','deep work']},

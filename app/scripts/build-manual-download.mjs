@@ -11,6 +11,10 @@ const files = {
   'time-audit-logo-4096.png': 'image/png',
   'USER-MANUAL.md': 'text/markdown;charset=utf-8',
   'USER-MANUAL.en.md': 'text/markdown;charset=utf-8',
+  'USER-MANUAL.zh-TW.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'USER-MANUAL.en.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'USER-MANUAL.zh-TW.pdf': 'application/pdf',
+  'USER-MANUAL.en.pdf': 'application/pdf',
 };
 const embedded = Object.fromEntries(Object.entries(files).map(([name, mime]) => [name, `data:${mime};base64,${readFileSync(join(publicDir, name)).toString('base64')}`]));
 const result = await build({
@@ -34,5 +38,5 @@ const html = `<!doctype html>
 <html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css.replaceAll('</style', '<\\/style')}</style></head><body><div id="root"></div><script>window.__TA_OFFLINE_ASSETS__=${JSON.stringify(embedded)};</script><script>${js.replaceAll('</script', '<\\/script')}</script></body></html>`;
 const htmlPath = join(publicDir, 'Time-Audit-Manual-Offline.html');
 writeFileSync(htmlPath, html);
-execFileSync('zip', ['-q', '-j', '-X', '-o', join(publicDir, 'Time-Audit-Downloads.zip'), htmlPath, join(publicDir, 'time-audit-logo-4096.png'), join(publicDir, 'QR-CODE_TimeAudit.png'), join(publicDir, 'USER-MANUAL.md'), join(publicDir, 'USER-MANUAL.en.md')]);
+execFileSync('zip', ['-q', '-j', '-X', '-o', join(publicDir, 'Time-Audit-Downloads.zip'), htmlPath, join(publicDir, 'time-audit-logo-4096.png'), join(publicDir, 'QR-CODE_TimeAudit.png'), ...['USER-MANUAL.md', 'USER-MANUAL.en.md', 'USER-MANUAL.zh-TW.docx', 'USER-MANUAL.en.docx', 'USER-MANUAL.zh-TW.pdf', 'USER-MANUAL.en.pdf'].map(name => join(publicDir, name))]);
 console.log('Built offline React manual and download archive.');

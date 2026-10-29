@@ -1,4 +1,4 @@
-# Time Audit User Guide (V1.25)
+# Time Audit User Guide (V1.25.1)
 
 © 2026–2027 Shu-Yen Wan（萬書言）
 
@@ -30,6 +30,8 @@ Read the review cards, open source entries, and decide whether a pattern fits yo
 
 ## 6. Sync, backup, and privacy
 
-After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.25 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
+After Drive authorization, use the top-bar sync button and watch its progress. Make sure both devices sync before switching. In **Settings → Backup & restore**, sync first and create an independent JSON copy in your Google Drive. You can inspect a copy before restoring it; the current Drive files are archived first. Update other devices to V1.25.1 before syncing after a restore. You can also download JSON or CSV locally and import JSON. Settings also includes language, font/sidebar size, reminders while the browser is open, activity category management, optional IPIP-50, and update checks.
+
+To introduce Time Audit to someone, open **Settings → Share Time Audit** and show the QR code. Tap it to enlarge, copy the site link, or download the image. The shared link contains none of your personal entries.
 
 **A good start:** Record for 3–7 days, including sleep and rest, before interpreting charts. Then choose one small experiment.

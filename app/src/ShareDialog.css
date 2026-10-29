@@ -6,3 +6,8 @@
 .share-url{width:100%;border:1px solid #d4e3ec;background:#f8fbfd;border-radius:10px;padding:10px 12px;color:#3a637d;font-size:.83rem}
 .share-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:15px}
 @media(max-width:760px){.topbar .top-actions .share-button{display:inline-grid}.share-body{padding:16px}.share-qr{width:min(250px,65vw)}.share-actions{display:grid;grid-template-columns:1fr 1fr}.share-actions>*:first-child{grid-column:1/-1}}
+.settings-share-card{display:flex;flex-direction:column;align-items:flex-start}
+.settings-share-qr{display:block;width:min(180px,100%);padding:0;margin:5px auto 15px;border:1px solid #dbe7ef;border-radius:14px;background:#f3f9fc;overflow:hidden;line-height:0}
+.settings-share-qr img{display:block;width:100%;height:auto}
+.settings-share-qr:focus-visible{outline:3px solid #79a8c2;outline-offset:3px}
+.settings-share-open{align-self:center}

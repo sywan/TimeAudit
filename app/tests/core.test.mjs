@@ -11,6 +11,7 @@ import {preferKeyboardDictation,speechText} from '../src/dictation.ts';
 import {dataQuality,weeklyRhythm,weeklyRhythmComposition,feelingByCategory,moodAssociations,workOutsideHours} from '../src/auditAnalytics.ts';
 import {mergeExperiments} from '../src/experiments.ts';
 import {suggestActivity} from '../src/classify.ts';
+import {suggestedEntryWindow} from '../src/entryTime.ts';
 import {mergeInsightFeedback} from '../src/insightFeedback.ts';
 import {activeCompassItems,mergeCompassItems} from '../src/compass.ts';
 
@@ -20,6 +21,18 @@ test('values and goals merge by item ID; an empty newer profile cannot erase the
   assert.deepEqual(mergeCompassItems([], [phone], [desktop]),[phone,desktop]);
   const removed={...phone,deletedAt:'2026-10-19T03:00:00Z',updatedAt:'2026-10-19T03:00:00Z'};
   assert.deepEqual(activeCompassItems(mergeCompassItems([phone],[removed],[phone])),[]);
+});
+
+test('backfill defaults stay on the selected day and start near the selected gap',()=>{
+  const now=new Date('2026-10-29T12:00:00Z');
+  const start=new Date('2026-10-22T03:10:00Z');
+  const long=suggestedEntryWindow({requestedStart:start,availableEnd:new Date('2026-10-22T09:00:00Z'),now,intervalMinutes:30});
+  assert.equal(long.start.toISOString(),'2026-10-22T03:10:00.000Z');
+  assert.equal(long.end.toISOString(),'2026-10-22T03:40:00.000Z');
+  const short=suggestedEntryWindow({requestedStart:start,availableEnd:new Date('2026-10-22T03:20:00Z'),now,intervalMinutes:30});
+  assert.equal(short.end.toISOString(),'2026-10-22T03:20:00.000Z');
+  const recent=suggestedEntryWindow({requestedStart:new Date('2026-10-29T11:50:00Z'),now,intervalMinutes:30});
+  assert.equal(recent.end.toISOString(),now.toISOString());
 });
 
 test('Drive sync restores independent values and goals despite a newer empty profile',async()=>{
